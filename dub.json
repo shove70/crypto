@@ -1,0 +1,8 @@
+{
+	"authors": ["Shove"],
+	"name": "crypto",
+	"description": "A D Library of encrypto, decrypto(3DES, AES, TEA, RSA...), encode, hash, and message digital signatures.",
+	"license": "Apache License, Version 2.0",
+	"copyright": "Copyright © 2018, Shove",
+	"targetName": "crypto"
+}
