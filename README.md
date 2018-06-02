@@ -1,7 +1,7 @@
 # A D Library of encryption, decryption, encode, hash, and message digital signatures.
 
 The same functional and fully compatible C++ project:
-https://github.com/shove70/crypt
+https://github.com/shove70/shove.c
 
 ### AES:
 
