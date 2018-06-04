@@ -298,7 +298,7 @@ private:
     static ubyte[] encrypt_decrypt_mixinXteaMode(string T)(RSAKeyInfo key, ubyte[] data)
     if (T == "encrypt" || T == "decrypt")
     {
-        import crypto.tea.xtea;
+        import crypto.tea;
 
         int[4] xteaKey;
         int rounds = 64;

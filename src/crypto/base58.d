@@ -141,6 +141,7 @@ public class Base58
 
     unittest
     {
+        import std.stdio;
         import crypto.base58;
 
         string str = Base58.encode(cast(byte[]) "abcdef1234");
