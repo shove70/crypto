@@ -153,7 +153,7 @@ public:
     }
 
 private:
-    static RandomGenerator rnd;
+    static InsecureRandomGenerator rnd;
 
     static BigInt generateRandomBigInt(uint bitLength, int highBit = -1, int lowBit = -1)
     {
