@@ -84,7 +84,8 @@ struct BigIntHelper
     */
 }
 
-struct RandomGenerator
+/++ Fast but cryptographically insecure source of random numbers. +/
+struct InsecureRandomGenerator
 {
     private static Mt19937 generator;
 
