@@ -95,12 +95,6 @@ struct RandomGenerator
 
     T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
     {
-        long r = generator.front;
-        generator.popFront();
-
-        long _min = min;
-        long _max = max;
-        
-        return cast(T)(r % (_max - _min + 1) + _min);
+        return uniform!("[]", T, T, typeof(generator))(min, max, generator);
     }
 }
