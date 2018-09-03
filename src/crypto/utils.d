@@ -2,7 +2,8 @@ module crypto.utils;
 
 import std.bigint;
 import std.array;
-import std.algorithm.mutation;
+import std.algorithm;
+import std.traits : Unqual;
 import std.conv;
 import std.random;
 
