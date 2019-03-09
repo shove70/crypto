@@ -103,8 +103,8 @@ struct InsecureRandomGenerator
 
 private @nogc nothrow pure @system
 {
-    version (Windows) version(LDC)
-        extern(Windows) void* SecureZeroMemory(void* ptr, size_t cnt);
+    //version (Windows) version(LDC)
+    //    extern(Windows) void* SecureZeroMemory(void* ptr, size_t cnt);
     version (linux)
         extern(C) void explicit_bzero(void* ptr, size_t cnt);
     version (FreeBSD)
