@@ -23,7 +23,7 @@ struct BigIntHelper
         return app.data;
     }
 
-    static BigInt bigIntFromUByteArray(ubyte[] buffer)
+    static BigInt bigIntFromUByteArray(in ubyte[] buffer)
     {
         BigInt ret = BigInt("0");
 

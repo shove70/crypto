@@ -186,7 +186,7 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
     private uint[Nb * (Nr + 1)] w;
     private uint[Nb * (Nr + 1)] dw;
 
-    public this(ubyte[] k)
+    public this(in ubyte[] k)
     {
         keyExpansion(k);
     }
@@ -307,7 +307,7 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
         }
     }
 
-    private void keyExpansion(ubyte[] k)
+    private void keyExpansion(in ubyte[] k)
     {
         assert(k.length >= Nk * 4, "At least " ~ (Nk * 4).to!string ~ " bytes long key must be set");
 
@@ -347,19 +347,19 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
 
 class AESUtils
 {
-    public static ubyte[] encrypt(alias T = AES128)(in ubyte[] buffer, string key)
+    public static ubyte[] encrypt(alias T = AES128)(in ubyte[] buffer, in char[] key)
     {
         return encrypt_decrypt!(T, "encrypt")(buffer, key);
     }
 
-    public static ubyte[] decrypt(alias T = AES128)(in ubyte[] buffer, string key)
+    public static ubyte[] decrypt(alias T = AES128)(in ubyte[] buffer, in char[] key)
     {
         return encrypt_decrypt!(T, "decrypt")(buffer, key);
     }
 
-    private static ubyte[] encrypt_decrypt(alias T1 = AES128, string T2)(in ubyte[] buffer, string key)
+    private static ubyte[] encrypt_decrypt(alias T1 = AES128, string T2)(in ubyte[] buffer, in char[] key)
     {
-        ubyte[] bkey = cast(ubyte[]) key;
+        const ubyte[] bkey = cast(const ubyte[]) key;
 
         T1 aes = new T1(bkey);
 

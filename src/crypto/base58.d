@@ -22,7 +22,7 @@ public class Base58
     }
 
     /// Encodes the given bytes as a base58 string (no checksum is appended).
-    public static string encode(byte[] inp)
+    public static string encode(in byte[] inp)
     {
         if (inp.length == 0)
         {
@@ -64,7 +64,7 @@ public class Base58
     }
 
     /// Decodes the given base58 string into the original data bytes.
-    public static byte[] decode(string input)
+    public static byte[] decode(in char[] input)
     {
         if (input.length == 0)
         {
