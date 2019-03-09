@@ -100,3 +100,36 @@ struct InsecureRandomGenerator
         return uniform!("[]", T, T, typeof(generator))(min, max, generator);
     }
 }
+
+private @nogc nothrow pure @system
+{
+    version (Windows) version(LDC)
+        extern(Windows) void* SecureZeroMemory(void* ptr, size_t cnt);
+    version (linux)
+        extern(C) void explicit_bzero(void* ptr, size_t cnt);
+    version (FreeBSD)
+        extern(C) void explicit_bzero(void* ptr, size_t cnt);
+    version (OpenBSD)
+        extern(C) void explicit_bzero(void* ptr, size_t cnt);
+}
+
+/+
+Sets the array to all zero. If `SecureZeroMemory` or `explicit_bzero`
+is available, uses it to prevent an optimizing compiler from removing
+"unnecessary" data writes. The typical use of this function is to
+erase secret keys after they are no longer needed.
++/
+void explicitZero(scope ubyte[] array) @nogc nothrow pure @trusted
+{
+    if (__ctfe)
+    {
+        array[] = 0;
+        return;
+    }
+    static if (is(typeof(SecureZeroMemory)))
+        SecureZeroMemory(array.ptr, array.length);
+    else static if (is(typeof(explicit_bzero)))
+        explicit_bzero(array.ptr, array.length);
+    else
+        array[] = 0;
+}

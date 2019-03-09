@@ -15,6 +15,12 @@ package struct TEA
         m_rounds = 32;
     }
 
+    ~this()
+    {
+        import crypto.utils : explicitZero;
+        explicitZero(cast(ubyte[]) m_key);
+    }
+
     /// Encrypt given ubyte array (length to be crypted must be 8 ubyte aligned)
     public alias Crypt!(EncryptBlock) Encrypt;
     /// Decrypt given ubyte array (length to be crypted must be 8 ubyte aligned)

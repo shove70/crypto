@@ -191,6 +191,13 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
         keyExpansion(k);
     }
 
+    ~this()
+    {
+        import crypto.utils : explicitZero;
+        explicitZero(cast(ubyte[]) w);
+        explicitZero(cast(ubyte[]) dw);
+    }
+
     public ubyte[] encrypt(in ubyte[] buffer)
     {
         ubyte[] message = buffer.dup;
@@ -361,7 +368,7 @@ class AESUtils
     {
         ubyte[] bkey = cast(ubyte[]) key;
 
-        T1 aes = new T1(bkey);
+        scope aes = new T1(bkey);
 
         if (T2 == "encrypt")
         {
