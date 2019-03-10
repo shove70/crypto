@@ -76,7 +76,7 @@ package struct TEA
 
 class Tea
 {
-	public static ubyte[] encrypt(ubyte[] input, string key)
+	public static ubyte[] encrypt(in ubyte[] input, in char[] key)
 	{
 		ubyte[] buf = cast(ubyte[])key;
 		int[4] bkey = [buf[0], buf[1], buf[2], buf[3]];
@@ -84,7 +84,7 @@ class Tea
 		return encrypt(input, bkey);
 	}
 	
-    public static ubyte[] encrypt(ubyte[] input, int[4] key)
+    public static ubyte[] encrypt(in ubyte[] input, int[4] key)
     {
         ubyte[] data = input.dup;
         int orgi_len = cast(int)data.length;
@@ -104,7 +104,7 @@ class Tea
         return data;
     }
 
-	public static ubyte[] decrypt(ubyte[] input, string key)
+	public static ubyte[] decrypt(in ubyte[] input, in char[] key)
 	{
 		ubyte[] buf = cast(ubyte[])key;
 		int[4] bkey = [buf[0], buf[1], buf[2], buf[3]];
@@ -112,7 +112,7 @@ class Tea
 		return decrypt(input, bkey);
 	}
 
-    public static ubyte[] decrypt(ubyte[] input, int[4] key)
+    public static ubyte[] decrypt(in ubyte[] input, int[4] key)
     {
         auto data = input.dup;
         TEA tea = TEA(key);
@@ -212,7 +212,7 @@ package struct XTEA
 
 class Xtea
 {
-	public static ubyte[] encrypt(ubyte[] input, string key, int rounds = 64)
+	public static ubyte[] encrypt(in ubyte[] input, in char[] key, int rounds = 64)
 	{
 		ubyte[] buf = cast(ubyte[])key;
 		int[4] bkey = [buf[0], buf[1], buf[2], buf[3]];
@@ -220,7 +220,7 @@ class Xtea
 		return encrypt(input, bkey, rounds);
 	}
 	
-    public static ubyte[] encrypt(ubyte[] input, int[4] key, int rounds = 64)
+    public static ubyte[] encrypt(in ubyte[] input, int[4] key, int rounds = 64)
     {
         ubyte[] data = input.dup;
         int orgi_len = cast(int)data.length;
@@ -240,7 +240,7 @@ class Xtea
         return data;
     }
 
-	public static ubyte[] decrypt(ubyte[] input, string key, int rounds = 64)
+	public static ubyte[] decrypt(in ubyte[] input, in char[] key, int rounds = 64)
 	{
 		ubyte[] buf = cast(ubyte[])key;
 		int[4] bkey = [buf[0], buf[1], buf[2], buf[3]];
@@ -248,7 +248,7 @@ class Xtea
 		return decrypt(input, bkey, rounds);
 	}
 
-    public static ubyte[] decrypt(ubyte[] input, int[4] key, int rounds = 64)
+    public static ubyte[] decrypt(in ubyte[] input, int[4] key, int rounds = 64)
     {
         auto data = input.dup;
         XTEA xtea = XTEA(key, rounds);

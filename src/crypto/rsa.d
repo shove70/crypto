@@ -304,7 +304,7 @@ private:
         int rounds = 64;
         size_t keySize = key.modulus_bytes.length;
 
-        void generateXteaKey(ubyte[] buf)
+        void generateXteaKey(in ubyte[] buf)
         {
             ubyte[] data = new ubyte[int.sizeof * 4];
             for (int i = 0; i < int.sizeof * 4; i++)
