@@ -36,29 +36,25 @@ struct BigIntHelper
         return ret;
     }
 
-    static BigInt powMod(BigInt base, BigInt modulus, BigInt exponent)
-    {
-        assert(base >= 1 && exponent >= 0 && modulus >= 1);
+//    static BigInt powMod(BigInt base, BigInt modulus, BigInt exponent)
+//    {
+//        assert(base >= 1 && exponent >= 0 && modulus >= 1);
+//
+//        BigInt result = BigInt("1");
+//
+//        while (exponent > 0)
+//        {
+//            if (exponent & 1)
+//            {
+//                result = (result * base) % modulus;
+//                base = (base * base) % modulus;
+//                exponent >>= 1;
+//            }
+//        }
+//
+//        return result;
+//    }
 
-        BigInt result = BigInt("1");
-        BigInt temp = base % modulus;
-
-        while (exponent >= 1)
-        {
-            if (exponent % 2 != 0)
-            {
-                result = (result * temp) % modulus;
-            }
-
-            temp = (temp * temp) % modulus;
-            exponent /= 2;
-        }
-
-        return result;
-    }
-
-    /*
-    /// recursion
     static BigInt powMod(BigInt base, BigInt modulus, BigInt exponent)
     {
         assert(base >= 1 && exponent >= 0 && modulus >= 1);
@@ -67,22 +63,25 @@ struct BigIntHelper
         {
             return BigInt(1) % modulus;
         }
+
         if (exponent == 1)
         {
             return base % modulus;
         }
+
         if (exponent % 2 != 0)
         {
             BigInt temp = powMod(base, modulus, exponent / 2);
+
             return (temp * temp * base) % modulus;
         }
         else
         {
             BigInt temp = powMod(base, modulus, exponent / 2);
+
             return (temp * temp) % modulus;
         }
     }
-    */
 }
 
 /++ Fast but cryptographically insecure source of random numbers. +/
