@@ -9,17 +9,18 @@ import std.random;
 
 struct BigIntHelper
 {
-    static ubyte[] bigIntToUByteArray(BigInt v)
+    static ubyte[] bigIntToUByteArray(BigInt value)
     {
         Appender!(ubyte[]) app;
 
-        while (v > 0)
+        while (value > 0)
         {
-            app.put((v - ((v >> 8) << 8)).to!ubyte);
-            v >>= 8;
+            app.put((value - ((value >> 8) << 8)).to!ubyte);
+            value >>= 8;
         }
 
         reverse(app.data);
+
         return app.data;
     }
 
@@ -47,9 +48,10 @@ struct BigIntHelper
 //            if (exponent & 1)
 //            {
 //                result = (result * base) % modulus;
-//                base = (base * base) % modulus;
-//                exponent >>= 1;
 //            }
+//
+//            base = ((base % modulus) * (base % modulus)) % modulus;
+//            exponent >>= 1;
 //        }
 //
 //        return result;
@@ -69,18 +71,9 @@ struct BigIntHelper
             return base % modulus;
         }
 
-        if (exponent % 2 != 0)
-        {
-            BigInt temp = powMod(base, modulus, exponent / 2);
+        BigInt temp = powMod(base, modulus, exponent / 2);
 
-            return (temp * temp * base) % modulus;
-        }
-        else
-        {
-            BigInt temp = powMod(base, modulus, exponent / 2);
-
-            return (temp * temp) % modulus;
-        }
+        return (exponent & 1) ? (temp * temp * base) % modulus : (temp * temp) % modulus;
     }
 }
 
