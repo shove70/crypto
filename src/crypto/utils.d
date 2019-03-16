@@ -92,3 +92,46 @@ struct InsecureRandomGenerator
         return uniform!("[]", T, T, typeof(generator))(min, max, generator);
     }
 }
+
+private @nogc nothrow pure @system
+{
+    version (linux)
+        extern(C) void explicit_bzero(void* ptr, size_t cnt);
+    version (FreeBSD)
+        extern(C) void explicit_bzero(void* ptr, size_t cnt);
+    version (OpenBSD)
+        extern(C) void explicit_bzero(void* ptr, size_t cnt);
+    version (OSX)
+        extern(C) int memset_s(void* ptr, size_t destsz, int c, size_t n);
+}
+
+/++
+Sets the array to all zero. On Linux, FreeBSD, and OpenBSD, uses
+`explicit_bzero` to prevent an optimizing compiler from deeming the
+data write "unnecessary" and omitting it. On Mac OS X uses `memset_s`
+for the same purpose. The typical use of this function is to erase
+secret keys after they are no longer needed.
+
+Limitations:
+On operating systems other than mentioned above this function is the
+same as `array[] = 0` and is not protected from being removed by the
+compiler.
++/
+void explicitZero(scope ubyte[] array) @nogc nothrow pure @trusted
+{
+    if (__ctfe)
+    {
+        array[] = 0;
+        return;
+    }
+    version (linux)
+        explicit_bzero(array.ptr, array.length);
+    else version (FreeBSD)
+        explicit_bzero(array.ptr, array.length);
+    else version (OpenBSD)
+        explicit_bzero(array.ptr, array.length);
+    else version (OSX)
+        memset_s(array.ptr, array.length, 0, array.length);
+    else
+        array[] = 0;
+}
