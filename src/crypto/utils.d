@@ -93,7 +93,11 @@ struct InsecureRandomGenerator
     }
 }
 
-private @nogc nothrow pure @system
+version (LDC)
+{
+    import ldc.intrinsics : llvm_memset;
+}
+else private @nogc nothrow pure @system
 {
     version (linux)
         extern(C) void explicit_bzero(void* ptr, size_t cnt);
@@ -106,16 +110,17 @@ private @nogc nothrow pure @system
 }
 
 /++
-Sets the array to all zero. On Linux, FreeBSD, and OpenBSD, uses
-`explicit_bzero` to prevent an optimizing compiler from deeming the
-data write "unnecessary" and omitting it. On Mac OS X uses `memset_s`
-for the same purpose. The typical use of this function is to erase
-secret keys after they are no longer needed.
+Sets the array to all zero. When compiling with LDC uses an intrinsic
+function that prevents the compiler from deeming the data write
+unnecessary and omitting it. When not compiling with LDC uses
+`explicit_bzero` on Linux, FreeBSD, and OpenBSD and `memset_s` on Mac
+OS X for the same purpose. The typical use of this function is to
+to erase secret keys after they are no longer needed.
 
 Limitations:
-On operating systems other than mentioned above this function is the
-same as `array[] = 0` and is not protected from being removed by the
-compiler.
+On operating systems other than mentioned above, when not compiling
+with LDC this function is the same as `array[] = 0` and is not
+protected from being removed by the compiler.
 +/
 void explicitZero(scope ubyte[] array) @nogc nothrow pure @trusted
 {
@@ -124,7 +129,14 @@ void explicitZero(scope ubyte[] array) @nogc nothrow pure @trusted
         array[] = 0;
         return;
     }
-    version (linux)
+    version (LDC)
+    {
+        static if (is(typeof(llvm_memset(array.ptr, 0, array.length, true)))) // LLVM 7+
+            llvm_memset(array.ptr, 0, array.length, true); // "true" prevents removal.
+        else // Pre-LLVM 7
+            llvm_memset(array.ptr, 0, array.length, ubyte.alignof, true);
+    }
+    else version (linux)
         explicit_bzero(array.ptr, array.length);
     else version (FreeBSD)
         explicit_bzero(array.ptr, array.length);
