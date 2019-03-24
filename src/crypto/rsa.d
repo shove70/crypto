@@ -159,14 +159,14 @@ private:
     {
         ubyte[] buffer = new ubyte[bitLength / 8];
 
-        uint pos = 0;
-        uint current = 0;
-        foreach (ref a; buffer)
+        for (ubyte[] unwritten = buffer; unwritten.length != 0;)
         {
-            if (pos == 0)
-                current = rnd.next;
-            a = cast(ubyte)(current >> 8 * pos);
-            pos = (pos + 1) % uint.sizeof;
+            import mir.random.engine : genRandomNonBlocking;
+            const n = genRandomNonBlocking(unwritten);
+            if (ptrdiff_t(0) <= cast(ptrdiff_t) n)
+                unwritten = unwritten[n .. $];
+            else
+                throw new Exception("Error trying to obtain system entropy to generate RSA key.");
         }
 
         if (highBit == 0)
