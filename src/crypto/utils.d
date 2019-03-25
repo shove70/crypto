@@ -6,6 +6,7 @@ import std.algorithm;
 import std.traits : Unqual;
 import std.conv;
 import std.random;
+import std.bitmanip;
 
 struct BigIntHelper
 {
@@ -90,6 +91,32 @@ struct InsecureRandomGenerator
     T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
     {
         return uniform!("[]", T, T, typeof(generator))(min, max, generator);
+    }
+}
+
+struct SecureRandomGenerator
+{
+    import mir.random.engine : genRandomNonBlocking;
+    
+    T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
+    {
+        ubyte[] buffer = new ubyte[T.sizeof];
+
+        for (ubyte[] unwritten = buffer; unwritten.length != 0;)
+        {
+            const n = genRandomNonBlocking(unwritten);
+
+            if (ptrdiff_t(0) <= cast(ptrdiff_t)n)
+            {
+                unwritten = unwritten[n .. $];
+            }
+            else
+            {
+                throw new Exception("Error trying to obtain system entropy to generate random number.");
+            }
+        }
+
+        return buffer.peek!T(0);
     }
 }
 

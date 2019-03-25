@@ -76,26 +76,38 @@ public:
                 y = BigInt("0");
                 return a;
             }
+
             BigInt ans = ex_gcd(b, a % b);
             BigInt temp = x;
             x = y;
             y = temp - (a / b * y);
+
             return ans;
         }
 
         BigInt cal(BigInt a, BigInt k)
         {
             BigInt gcd = ex_gcd(a, k);
+
             if (gcd % 1 != 0)
             {
                 return BigInt("-1");
             }
+
             x = x * (1 / gcd);
+
             if (k < 0)
+            {
                 k *= -1;
+            }
+
             BigInt ans = x % k;
+
             if (ans < 0)
+            {
                 ans = ans += k;
+            }
+
             return ans;
         }
 
@@ -105,14 +117,19 @@ public:
         {
             p = generateRandomBigInt(bitLength / 2, 1, 1);
             if (isProbablePrime(p))
+            {
                 break;
+            }
         }
         while (true)
         {
             q = generateRandomBigInt(bitLength / 2, 1, 1);
             if (isProbablePrime(q))
+            {
                 break;
+            }
         }
+
         n = p * q;
         t = (p - 1) * (q - 1);
         e = PRIMES[(rnd.next % 42) + 6500];
@@ -153,31 +170,43 @@ public:
     }
 
 private:
-    static InsecureRandomGenerator rnd;
+    static SecureRandomGenerator rnd;
 
     static BigInt generateRandomBigInt(uint bitLength, int highBit = -1, int lowBit = -1)
     {
         ubyte[] buffer = new ubyte[bitLength / 8];
 
-        for (ubyte[] unwritten = buffer; unwritten.length != 0;)
+        uint pos = 0;
+        uint current = 0;
+
+        foreach (ref a; buffer)
         {
-            import mir.random.engine : genRandomNonBlocking;
-            const n = genRandomNonBlocking(unwritten);
-            if (ptrdiff_t(0) <= cast(ptrdiff_t) n)
-                unwritten = unwritten[n .. $];
-            else
-                throw new Exception("Error trying to obtain system entropy to generate RSA key.");
+            if (pos == 0)
+            {
+                current = rnd.next;
+            }
+
+            a = cast(ubyte)(current >> 8 * pos);
+            pos = (pos + 1) % uint.sizeof;
         }
 
         if (highBit == 0)
+        {
             buffer[0] &= (0xFF >> 1);
+        }
         else if (highBit == 1)
+        {
             buffer[0] |= (0x01 << 7);
+        }
 
         if (lowBit == 0)
+        {
             buffer[$ - 1] &= (0xFF << 1);
+        }
         else if (lowBit == 1)
+        {
             buffer[$ - 1] |= 0x01;
+        }
 
         return BigIntHelper.bigIntFromUByteArray(buffer);
     }
@@ -185,12 +214,16 @@ private:
     static bool isProbablePrime(BigInt n)
     {
         if (n == 2)
+        {
             return true;
+        }
 
         foreach (prime; PRIMES)
         {
             if (n % prime == 0)
+            {
                 return false;
+            }
         }
 
         return millerRabinPrimeTest(n);
@@ -204,8 +237,11 @@ private:
         for (int i = 0; i < s; i++)
         {
             a = rnd.next % (n - 2) + 2;
+
             if (BigIntHelper.powMod(a, n, n - 1) != 1)
+            {
                 return false;
+            }
         }
 
         return true;
