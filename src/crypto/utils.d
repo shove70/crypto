@@ -97,11 +97,41 @@ struct InsecureRandomGenerator
 struct SecureRandomGenerator
 {
     import mir.random.engine : genRandomNonBlocking;
-    
+    import mir.random : randIndex;
+
     T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
     {
-        ubyte[] buffer = new ubyte[T.sizeof];
+        static if (T.sizeof == ubyte.sizeof)  alias UnsignedT = ubyte;
+        static if (T.sizeof == ushort.sizeof) alias UnsignedT = ushort;
+        static if (T.sizeof == uint.sizeof)   alias UnsignedT = uint;
 
+        if (min == T.min && max == T.max)
+        {
+            UnsignedT[1] buffer = void;
+            fill(cast(ubyte[]) buffer[]);
+            return cast(T) buffer[0];
+        }
+        else
+        {
+            static struct Generator
+            {
+                enum isRandomEngine = true; // for mir.random interface
+                enum UnsignedT max = UnsignedT.max; // for mir.random interface
+                SecureRandomGenerator* this_;
+                UnsignedT opCall()
+                {
+                    UnsignedT[1] buffer = void;
+                    this_.fill(cast(ubyte[]) buffer[]);
+                    return buffer[0];
+                }
+            }
+            Generator gen = { &this };
+            return cast(T) (min + gen.randIndex!UnsignedT(cast(UnsignedT) (max - min + 1)));
+        }
+    }
+
+    void fill(scope ubyte[] buffer) @safe
+    {
         for (ubyte[] unwritten = buffer; unwritten.length != 0;)
         {
             const n = genRandomNonBlocking(unwritten);
@@ -115,9 +145,14 @@ struct SecureRandomGenerator
                 throw new Exception("Error trying to obtain system entropy to generate random number.");
             }
         }
-
-        return buffer.peek!T(0);
     }
+}
+
+unittest
+{
+    SecureRandomGenerator gen;
+    const x = gen.next(100, 101);
+    assert(x >= 100 && x <= 101);
 }
 
 version (LDC)
