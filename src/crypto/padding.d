@@ -8,12 +8,12 @@ import crypto.utils;
 
 enum PaddingMode
 {
-    NoPadding,		// None
-    ANSIX923,		// 00 00 00 04 (Zeros  + size)
-    ISO10126,		// 0A EB 02 04 (Random + size)
-    PKCS5,			// 04 04 04 04 (All size)
-    PKCS7,			// 04 04 04 04 (All size)
-    Zeros			// 00 00 00 00 (All zero)
+    NoPadding,       // None
+    ANSIX923,        // 00 00 00 04 (Zeros  + size)
+    ISO10126,        // 0A EB 02 04 (Random + size)
+    PKCS5,           // 04 04 04 04 (All size)
+    PKCS7,           // 04 04 04 04 (All size)
+    Zeros            // 00 00 00 00 (All zero)
 }
 
 alias PaddingNoPadding = PaddingImpl!("None",   "None");
