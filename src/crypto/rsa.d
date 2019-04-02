@@ -7,6 +7,7 @@ import std.base64;
 import std.typecons;
 
 import crypto.utils;
+import crypto.padding;
 
 struct RSAKeyPair
 {
@@ -170,8 +171,6 @@ public:
     }
 
 private:
-
-    static SecureRandomGenerator rnd;
 
     static BigInt generateRandomBigInt(uint bitLength, int highBit = -1, int lowBit = -1)
     {
@@ -415,11 +414,11 @@ private:
 
         if (T == "encrypt")
         {
-            ret ~= Xtea.encrypt(data, xteaKey, rounds);
+            ret ~= Xtea.encrypt(data, xteaKey, rounds, PaddingMode.ISO10126);
         }
         else
         {
-            ret ~= Xtea.decrypt(data, xteaKey, rounds);
+            ret ~= Xtea.decrypt(data, xteaKey, rounds, PaddingMode.ISO10126);
         }
 
         return ret;

@@ -3,6 +3,8 @@ module crypto.tea;
 import std.bitmanip;
 import std.exception;
 
+import crypto.padding;
+
 package struct TEA
 {
     private enum int DELTA = cast(int) 0x9E3779B9;
@@ -82,27 +84,17 @@ package struct TEA
 
 class Tea
 {
-	public static ubyte[] encrypt(in ubyte[] input, in char[] key)
+	public static ubyte[] encrypt(in ubyte[] input, in char[] key, PaddingMode paddingMode = PaddingMode.NoPadding)
 	{
 		ubyte[] buf = cast(ubyte[])key;
 		int[4] bkey = [buf[0], buf[1], buf[2], buf[3]];
 
-		return encrypt(input, bkey);
+		return encrypt(input, bkey, paddingMode);
 	}
 	
-    public static ubyte[] encrypt(in ubyte[] input, int[4] key)
+    public static ubyte[] encrypt(in ubyte[] input, int[4] key, PaddingMode paddingMode = PaddingMode.NoPadding)
     {
-        ubyte[] data = input.dup;
-        int orgi_len = cast(int)data.length;
-
-		while ((data.length + 4) % 8 != 0)
-        {
-            data ~= 0;
-        }
-
-        ubyte[] len_buf = new ubyte[4];
-        len_buf.write!int(orgi_len, 0);
-        data ~= len_buf;
+        ubyte[] data = Padding.padding(input, 8, paddingMode);
 
         TEA tea = TEA(key);
         tea.Encrypt(data);
@@ -110,24 +102,21 @@ class Tea
         return data;
     }
 
-	public static ubyte[] decrypt(in ubyte[] input, in char[] key)
+	public static ubyte[] decrypt(in ubyte[] input, in char[] key, PaddingMode paddingMode = PaddingMode.NoPadding)
 	{
 		ubyte[] buf = cast(ubyte[])key;
 		int[4] bkey = [buf[0], buf[1], buf[2], buf[3]];
 
-		return decrypt(input, bkey);
+		return decrypt(input, bkey, paddingMode);
 	}
 
-    public static ubyte[] decrypt(in ubyte[] input, int[4] key)
+    public static ubyte[] decrypt(in ubyte[] input, int[4] key, PaddingMode paddingMode = PaddingMode.NoPadding)
     {
         auto data = input.dup;
         TEA tea = TEA(key);
         tea.Decrypt(data);
 
-        int orgi_len;
-        orgi_len = data.peek!int(data.length - 4);
-
-        return data[0 .. orgi_len];
+        return Padding.unpadding(data, 8, paddingMode);
     }
 
     unittest
@@ -138,9 +127,9 @@ class Tea
         ubyte[] data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
         int[4] key = [1, 2, 3, 4];
 
-        ubyte[] buf = Tea.encrypt(data, key);
+        ubyte[] buf = Tea.encrypt(data, key, PaddingMode.PKCS5);
         writeln(buf);
-        buf = Tea.decrypt(buf, key);
+        buf = Tea.decrypt(buf, key, PaddingMode.PKCS5);
         writeln(buf);
     }
 }
@@ -218,27 +207,17 @@ package struct XTEA
 
 class Xtea
 {
-	public static ubyte[] encrypt(in ubyte[] input, in char[] key, int rounds = 64)
+	public static ubyte[] encrypt(in ubyte[] input, in char[] key, int rounds = 64, PaddingMode paddingMode = PaddingMode.NoPadding)
 	{
 		ubyte[] buf = cast(ubyte[])key;
 		int[4] bkey = [buf[0], buf[1], buf[2], buf[3]];
 
-		return encrypt(input, bkey, rounds);
+		return encrypt(input, bkey, rounds, paddingMode);
 	}
 	
-    public static ubyte[] encrypt(in ubyte[] input, int[4] key, int rounds = 64)
+    public static ubyte[] encrypt(in ubyte[] input, int[4] key, int rounds = 64, PaddingMode paddingMode = PaddingMode.NoPadding)
     {
-        ubyte[] data = input.dup;
-        int orgi_len = cast(int)data.length;
-
-		while ((data.length + 4) % 8 != 0)
-        {
-            data ~= 0;
-        }
-
-        ubyte[] len_buf = new ubyte[4];
-        len_buf.write!int(orgi_len, 0);
-        data ~= len_buf;
+        ubyte[] data = Padding.padding(input, 8, paddingMode);
 
         XTEA xtea = XTEA(key, rounds);
         xtea.Encrypt(data);
@@ -246,24 +225,21 @@ class Xtea
         return data;
     }
 
-	public static ubyte[] decrypt(in ubyte[] input, in char[] key, int rounds = 64)
+	public static ubyte[] decrypt(in ubyte[] input, in char[] key, int rounds = 64, PaddingMode paddingMode = PaddingMode.NoPadding)
 	{
 		ubyte[] buf = cast(ubyte[])key;
 		int[4] bkey = [buf[0], buf[1], buf[2], buf[3]];
 
-		return decrypt(input, bkey, rounds);
+		return decrypt(input, bkey, rounds, paddingMode);
 	}
 
-    public static ubyte[] decrypt(in ubyte[] input, int[4] key, int rounds = 64)
+    public static ubyte[] decrypt(in ubyte[] input, int[4] key, int rounds = 64, PaddingMode paddingMode = PaddingMode.NoPadding)
     {
         auto data = input.dup;
         XTEA xtea = XTEA(key, rounds);
         xtea.Decrypt(data);
 
-        int orgi_len;
-        orgi_len = data.peek!int(data.length - 4);
-
-        return data[0 .. orgi_len];
+        return Padding.unpadding(data, 8, paddingMode);
     }
 
     unittest
@@ -275,9 +251,9 @@ class Xtea
         int[4] key   = [1, 2, 3, 4];
         int rounds   = 64;
 
-        ubyte[] buf = Xtea.encrypt(data, key, rounds);
+        ubyte[] buf = Xtea.encrypt(data, key, rounds, PaddingMode.PKCS5);
         writeln(buf);
-        buf = Xtea.decrypt(buf, key, rounds);
+        buf = Xtea.decrypt(buf, key, rounds, PaddingMode.PKCS5);
         writeln(buf);
     }
 }

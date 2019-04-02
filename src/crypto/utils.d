@@ -94,6 +94,8 @@ struct InsecureRandomGenerator
     }
 }
 
+__gshared SecureRandomGenerator rnd;
+
 struct SecureRandomGenerator
 {
     import mir.random.engine : genRandomNonBlocking;

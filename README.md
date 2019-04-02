@@ -7,12 +7,13 @@ https://github.com/shove70/shove.c
 
 ```
 import crypto.aes;
+import crypto.padding;
 
 string key = "12341234123412341234123412341234";
 ubyte[] message = cast(ubyte[])"123412341234123412341234123412341";
 
-ubyte[] buffer = AESUtils.encrypt!AES128(message, key);
-buffer = AESUtils.decrypt!AES128(buffer, key);
+ubyte[] buffer = AESUtils.encrypt!AES128(message, key, PaddingMode.PKCS5);
+buffer = AESUtils.decrypt!AES128(buffer, key, PaddingMode.PKCS5);
 
 assert(message == buffer);
 ```
@@ -21,13 +22,14 @@ assert(message == buffer);
 
 ```
 import crypto.tea.xtea;
+import crypto.padding;
 
 int[4] key = [1, 2, 3, 4];
 int rounds = 64;
 ubyte[] message = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 
-ubyte[] buffer = Xtea.encrypt(message, key, rounds);
-buffer = Xtea.decrypt(buffer, key, rounds);
+ubyte[] buffer = Xtea.encrypt(message, key, rounds, PaddingMode.PKCS5);
+buffer = Xtea.decrypt(buffer, key, rounds, PaddingMode.PKCS5);
 
 assert(message == buffer);
 ```
