@@ -129,7 +129,7 @@ unittest
     ubyte[] paddinged = PaddingPKCS5.padding(data, 8);
     writeln(paddinged);
 
-    data = PaddingPKCS5.unPadding(paddinged, 8);
+    data = PaddingPKCS5.unpadding(paddinged, 8);
     writeln(data);
 }
 
