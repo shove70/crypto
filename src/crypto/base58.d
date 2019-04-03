@@ -119,10 +119,10 @@ public class Base58
     }
 
     /++
-	Divides a number, represented as an array of bytes each containing a single digit
-	in the specified base, by the given divisor. The given number is modified in-place
-	to contain the quotient, and the return value is the remainder.
-	+/
+    Divides a number, represented as an array of bytes each containing a single digit
+    in the specified base, by the given divisor. The given number is modified in-place
+    to contain the quotient, and the return value is the remainder.
+    +/
     private static byte divmod(byte[] number, int firstDigit, int base, int divisor)
     {
         // this is just long division which accounts for the base of the input digits

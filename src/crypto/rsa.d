@@ -1139,7 +1139,7 @@ The output, that is, the length of H (x) is fixed
 
 The procedure for calculating H (x) is efficient (for string X of length n), the time complexity of H (x) should be O (n)
 For bitcoin, the hash function used by such cryptographic systems, it needs to have the following properties:
-	`;
+    `;
 
     ubyte[] sb = cast(ubyte[]) data;
     ubyte[] db = RSA.encrypt(keyPair.privateKey, sb);
@@ -1169,7 +1169,7 @@ The output, that is, the length of H (x) is fixed
 
 The procedure for calculating H (x) is efficient (for string X of length n), the time complexity of H (x) should be O (n)
 For bitcoin, the hash function used by such cryptographic systems, it needs to have the following properties:
-	`;
+    `;
 
     ubyte[] sb = cast(ubyte[]) data;
     ubyte[] db = RSA.encrypt(pri_key, sb);
