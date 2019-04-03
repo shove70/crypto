@@ -187,10 +187,14 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
 
     private uint[Nb * (Nr + 1)] w;
     private uint[Nb * (Nr + 1)] dw;
+    private ubyte[] iv;
 
-    public this(in ubyte[] k)
+    public this(in ubyte[] key, in ubyte[] iv = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     {
-        keyExpansion(k);
+        keyExpansion(key);
+
+        enforce((iv.length == 16), "The length of IV must be 16");
+        this.iv = cast(ubyte[])iv;
     }
 
     ~this()
@@ -198,14 +202,21 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
         import crypto.utils : explicitZero;
         explicitZero(cast(ubyte[]) w);
         explicitZero(cast(ubyte[]) dw);
+        explicitZero(cast(ubyte[]) iv);
     }
 
     public ubyte[] encrypt(in ubyte[] buffer, PaddingMode paddingMode)
     {
         ubyte[] message = Padding.padding(buffer, 16, paddingMode);
+        ubyte[] iv_step = iv.dup;
 
         for (int i = 0; i < message.length / 16; i++)
         {
+            for (int j = 0; j < 16; j++)
+            {
+                message[i * 16 + j] ^= iv_step[j];
+            }
+
             uint* stateptr = cast(uint*) message + i * 4;
             uint[] state = stateptr[0 .. Nb];
             uint[Nb] t;
@@ -233,6 +244,8 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
             state[1] = sbox[cast(ubyte)(t[1])] ^ ((sbox[cast(ubyte)(t[2] >> 8)]) << 8) ^ ((sbox[cast(ubyte)(t[3] >> 16)]) << 16) ^ ((sbox[cast(ubyte)(t[0] >> 24)]) << 24) ^ w[round * Nb + 1];
             state[2] = sbox[cast(ubyte)(t[2])] ^ ((sbox[cast(ubyte)(t[3] >> 8)]) << 8) ^ ((sbox[cast(ubyte)(t[0] >> 16)]) << 16) ^ ((sbox[cast(ubyte)(t[1] >> 24)]) << 24) ^ w[round * Nb + 2];
             state[3] = sbox[cast(ubyte)(t[3])] ^ ((sbox[cast(ubyte)(t[0] >> 8)]) << 8) ^ ((sbox[cast(ubyte)(t[1] >> 16)]) << 16) ^ ((sbox[cast(ubyte)(t[2] >> 24)]) << 24) ^ w[round * Nb + 3];
+
+            iv_step = message[i * 16..i * 16 + 16];
         }
 
         return message;
@@ -243,9 +256,12 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
         enforce(buffer.length % 16 == 0, "The ciphertext length must be a multiple of 16.");
 
         ubyte[] cipher = buffer.dup;
+        ubyte[] iv_step = iv.dup;
 
         for (int i = 0; i < cipher.length / 16; i++)
         {
+            ubyte[] iv_next = cipher[i * 16..i * 16 + 16].dup;
+
             uint* stateptr = cast(uint*) cipher + i * 4;
             uint[] state = stateptr[0 .. Nb];
             uint[4] t;
@@ -272,6 +288,13 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
             state[1] = isbox[cast(ubyte)(t[1])] ^ ((isbox[cast(ubyte)(t[0] >> 8)]) << 8) ^ ((isbox[cast(ubyte)(t[3] >> 16)]) << 16) ^ ((isbox[cast(ubyte)(t[2] >> 24)]) << 24) ^ dw[1];
             state[2] = isbox[cast(ubyte)(t[2])] ^ ((isbox[cast(ubyte)(t[1] >> 8)]) << 8) ^ ((isbox[cast(ubyte)(t[0] >> 16)]) << 16) ^ ((isbox[cast(ubyte)(t[3] >> 24)]) << 24) ^ dw[2];
             state[3] = isbox[cast(ubyte)(t[3])] ^ ((isbox[cast(ubyte)(t[2] >> 8)]) << 8) ^ ((isbox[cast(ubyte)(t[1] >> 16)]) << 16) ^ ((isbox[cast(ubyte)(t[0] >> 24)]) << 24) ^ dw[3];
+
+            for (int j = 0; j < 16; j++)
+            {
+                cipher[i * 16 + j] ^= iv_step[j];
+            }
+
+            iv_step = iv_next;
         }
 
         return Padding.unpadding(cipher, 16, paddingMode);
@@ -360,21 +383,21 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
 
 class AESUtils
 {
-    public static ubyte[] encrypt(alias T = AES128)(in ubyte[] buffer, in char[] key, PaddingMode paddingMode = PaddingMode.NoPadding)
+    public static ubyte[] encrypt(alias T = AES128)(in ubyte[] buffer, in char[] key, in ubyte[] iv = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], PaddingMode paddingMode = PaddingMode.NoPadding)
     {
-        return encrypt_decrypt!(T, "encrypt")(buffer, key, paddingMode);
+        return encrypt_decrypt!(T, "encrypt")(buffer, key, iv, paddingMode);
     }
 
-    public static ubyte[] decrypt(alias T = AES128)(in ubyte[] buffer, in char[] key, PaddingMode paddingMode = PaddingMode.NoPadding)
+    public static ubyte[] decrypt(alias T = AES128)(in ubyte[] buffer, in char[] key, in ubyte[] iv = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], PaddingMode paddingMode = PaddingMode.NoPadding)
     {
-        return encrypt_decrypt!(T, "decrypt")(buffer, key, paddingMode);
+        return encrypt_decrypt!(T, "decrypt")(buffer, key, iv, paddingMode);
     }
 
-    private static ubyte[] encrypt_decrypt(alias T1 = AES128, string T2)(in ubyte[] buffer, in char[] key, PaddingMode paddingMode)
+    private static ubyte[] encrypt_decrypt(alias T1 = AES128, string T2)(in ubyte[] buffer, in char[] key, in ubyte[] iv, PaddingMode paddingMode)
     {
         const ubyte[] bkey = cast(const ubyte[]) key;
 
-        scope aes = new T1(bkey);
+        scope aes = new T1(bkey, iv);
 
         if (T2 == "encrypt")
         {
@@ -393,8 +416,9 @@ unittest
 
     auto key     = cast(ubyte[]) hexString!"000102030405060708090a0b0c0d0e0f";
     auto message = cast(ubyte[]) hexString!"00112233445566778899aabbccddeeff";
+    ubyte[] iv   = [1, 2, 3, 4, 5, 6, 7, 8, 0, 0, 0, 0, 1, 2, 3, 4];
 
-    auto aes = new AES128(key);
+    auto aes = new AES128(key, iv);
 
     ubyte[] buffer = aes.encrypt(message, PaddingMode.PKCS5);
 
