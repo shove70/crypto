@@ -3,7 +3,7 @@ module crypto.tea;
 import std.bitmanip;
 import std.exception;
 
-import crypto.padding;
+public import crypto.padding;
 
 package struct TEA
 {

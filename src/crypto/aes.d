@@ -4,7 +4,7 @@ import std.conv : to;
 import std.bitmanip;
 import std.exception : enforce;
 
-import crypto.padding;
+public import crypto.padding;
 
 alias AES128 = AES!(4, 4, 10);
 alias AES192 = AES!(4, 6, 12);

@@ -7,7 +7,7 @@ import std.base64;
 import std.typecons;
 
 import crypto.utils;
-import crypto.padding;
+public import crypto.padding;
 
 struct RSAKeyPair
 {
