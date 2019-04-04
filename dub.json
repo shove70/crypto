@@ -5,7 +5,6 @@
 	"license": "Apache License, Version 2.0",
 	"copyright": "Copyright © 2018, Shove",
 	"dependencies": {
-		"mir-random": ">=0.3.6"
 	},
 	"targetName": "crypto"
 }

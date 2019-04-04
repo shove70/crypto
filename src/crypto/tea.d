@@ -19,8 +19,7 @@ package struct TEA
 
     ~this()
     {
-        import crypto.utils : explicitZero;
-        explicitZero(cast(ubyte[]) m_key);
+        m_key[] = 0;
     }
 
     /// Encrypt given ubyte array (length to be crypted must be 8 ubyte aligned)

@@ -176,7 +176,18 @@ private:
     {
         ubyte[] buffer = new ubyte[bitLength / 8];
 
-        rnd.fill(buffer);
+        uint pos = 0;
+        uint current = 0;
+        foreach (ref a; buffer)
+        {
+            if (pos == 0)
+            {
+                current = rnd.next;
+            }
+
+            a = cast(ubyte)(current >> 8 * pos);
+            pos = (pos + 1) % uint.sizeof;
+        }
 
         if (highBit == 0)
         {
