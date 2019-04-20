@@ -9,6 +9,9 @@ import std.typecons;
 import crypto.utils;
 public import crypto.padding;
 
+static if (is(typeof(crypto.utils.secureRnd)))
+    private alias rnd = crypto.utils.secureRnd; // Use secure RNG if available (replaces imported symbol `rnd`).
+
 struct RSAKeyPair
 {
     string privateKey;

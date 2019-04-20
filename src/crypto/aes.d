@@ -429,9 +429,10 @@ unittest
 {
     string key = "12341234123412341234123412341234"; // length = 24;
     ubyte[] message = cast(ubyte[]) "12341234123412341234123412341234";
+    ubyte[] iv = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-    ubyte[] buffer = AESUtils.encrypt!AES128(message, key, PaddingMode.PKCS5);
-    buffer = AESUtils.decrypt!AES128(buffer, key, PaddingMode.PKCS5);
+    ubyte[] buffer = AESUtils.encrypt!AES128(message, key, iv, PaddingMode.PKCS5);
+    buffer = AESUtils.decrypt!AES128(buffer, key, iv, PaddingMode.PKCS5);
 
     assert(message == buffer);
 }
