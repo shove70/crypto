@@ -110,7 +110,7 @@ version (NetBSD) version = SecureARC4Random; // ChaCha20
 
 version (SecureARC4Random)
 {
-    //private extern(C) uint arcrandom() @nogc nothrow @safe;
+    private extern(C) uint arc4random() @nogc nothrow @safe;
     private extern(C) uint arc4random_uniform(uint upperBound) @nogc nothrow @safe;
 
     /++ Cryptographically secure source of random numbers. Not available on all platforms. +/
@@ -124,9 +124,9 @@ version (SecureARC4Random)
         +/
         T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
         {
-            //if (min == T.min && max == T.max)
-            //    return cast(T) arcrandom();
-            //else
+            if (min == T.min && max == T.max)
+                return cast(T) arc4random();
+            else
                 return cast(T) (min + arc4random_uniform(1U + max - min));
         }
     }
