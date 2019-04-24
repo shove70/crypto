@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/shove70/crypto.svg?branch=master)](https://travis-ci.org/shove70/crypto)
+[![GitHub tag](https://img.shields.io/github/tag/shove70/crypto.svg?maxAge=86400)](https://github.com/shove70/crypto/releases)
 
 # A D Library of encryption, decryption, encode, hash, and message digital signatures.
 
