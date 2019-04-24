@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/shove70/crypto.svg?branch=master)](https://travis-ci.org/shove70/crypto)
+
 # A D Library of encryption, decryption, encode, hash, and message digital signatures.
 
 The same functional and fully compatible C++ project:
