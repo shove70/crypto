@@ -58,7 +58,7 @@ struct BigIntHelper
 //        return result;
 //    }
 
-    static BigInt powMod(BigInt base, BigInt modulus, BigInt exponent)
+    static BigInt powMod(const BigInt base, const BigInt modulus, const BigInt exponent)
     {
         assert(base >= 1 && exponent >= 0 && modulus >= 1);
 

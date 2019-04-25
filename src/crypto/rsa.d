@@ -5,6 +5,8 @@ import std.bitmanip;
 import std.datetime;
 import std.base64;
 import std.typecons;
+import std.range;
+import std.algorithm;
 
 import crypto.utils;
 public import crypto.padding;
@@ -120,7 +122,7 @@ public:
         while (true)
         {
             p = generateRandomBigInt(bitLength / 2, 1, 1);
-            if (isProbablePrime(p))
+            if (isProbablePrime(p, 40))
             {
                 break;
             }
@@ -128,7 +130,7 @@ public:
         while (true)
         {
             q = generateRandomBigInt(bitLength / 2, 1, 1);
-            if (isProbablePrime(q))
+            if (isProbablePrime(q, 40))
             {
                 break;
             }
@@ -213,11 +215,16 @@ private:
         return BigIntHelper.bigIntFromUByteArray(buffer);
     }
 
-    static bool isProbablePrime(BigInt n)
+    static bool isProbablePrime(BigInt n, size_t confidence)
     {
         if (n == 2)
         {
             return true;
+        }
+
+        if (n <= PRIMES[$ - 1])
+        {
+            return canFind(PRIMES[0..$], n);
         }
 
         foreach (prime; PRIMES)
@@ -228,19 +235,54 @@ private:
             }
         }
 
-        return millerRabinPrimeTest(n);
+        BigInt[] bases;
+        if (n < 1_373_653)
+        {
+            bases = [BigInt(2), BigInt(3)];
+        }
+        else if (n <= 4_759_123_141)
+        {
+            bases = [BigInt(2), BigInt(7), BigInt(61)];
+        }
+        else if (n <= 341_550_071_728_320)
+        {
+            bases = [BigInt(2), BigInt(3), BigInt(5), BigInt(7), BigInt(11), BigInt(13), BigInt(17)];
+        }
+        else if (n < 10_000_000_000_000_000)
+        {
+            if (n == 46_856_248_255_981)
+            {
+                return false;
+            }
+
+            bases = [BigInt(2), BigInt(3), BigInt(7), BigInt(61), BigInt(24251)];
+        }
+
+        return millerRabinPrimeTest(n, bases, confidence);
     }
 
-    static bool millerRabinPrimeTest(BigInt n)
+    static bool millerRabinPrimeTest(const BigInt n, const BigInt[] bases, size_t confidence)
     {
-        int s = 40;
+        BigInt[] test_bases;
+
+        if (bases.length)
+        {
+            test_bases = bases.dup;
+        }
+        else
+        {
+            test_bases = new BigInt[confidence];
+            for (int i = 0; i < confidence; i++)
+            {
+                test_bases[i] = rnd.next % (n - 2) + 2;
+            }
+        }
+
         BigInt a;
 
-        for (int i = 0; i < s; i++)
+        foreach (b; test_bases)
         {
-            a = rnd.next % (n - 2) + 2;
-
-            if (BigIntHelper.powMod(a, n, n - 1) != 1)
+            if (BigIntHelper.powMod(b, n, n - 1) != 1)
             {
                 return false;
             }
@@ -1161,7 +1203,7 @@ For bitcoin, the hash function used by such cryptographic systems, it needs to h
     writeln(cast(string) sb);
 }
 
-unittest
+void main()
 {
     import std.stdio;
 
