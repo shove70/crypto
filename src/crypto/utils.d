@@ -78,30 +78,6 @@ struct BigIntHelper
     }
 }
 
-alias rnd = secureRnd;
-
-///++ Fast but cryptographically insecure source of random numbers. +/
-//struct InsecureRandomGenerator
-//{
-//    private static Mt19937 generator;
-//
-//    static this()
-//    {
-//        generator.seed(unpredictableSeed);
-//    }
-//
-//    /++
-//    Params:
-//        min = min inclusive
-//        max = max inclusive
-//    Returns: `x` such that `min <= x <= max`
-//    +/
-//    T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
-//    {
-//        return uniform!("[]", T, T, typeof(generator))(min, max, generator);
-//    }
-//}
-
 version (CRuntime_Bionic) version = SecureARC4Random; // ChaCha20
 version (OSX) version = SecureARC4Random; // AES
 version (OpenBSD) version = SecureARC4Random; // ChaCha20
@@ -132,7 +108,7 @@ version (SecureARC4Random)
     }
     /// ditto
     alias SecureRandomGenerator = ARC4RandomGenerator;
-    __gshared SecureRandomGenerator secureRnd; // Can be global because it has no mutable state.
+    __gshared SecureRandomGenerator rnd; // Can be global because it has no mutable state.
 }
 else version (Windows)
 {
@@ -191,5 +167,31 @@ else version (Windows)
     }
     /// ditto
     alias SecureRandomGenerator = CryptGenRandomGenerator;
-    static SecureRandomGenerator secureRnd; // Thread-local because it has a mutable buffer.
+    static SecureRandomGenerator rnd; // Thread-local because it has a mutable buffer.
+}
+else
+{
+    ///++ Fast but cryptographically insecure source of random numbers. +/
+    struct InsecureRandomGenerator
+    {
+        private static Mt19937 generator;
+
+        static this()
+        {
+            generator.seed(unpredictableSeed);
+        }
+
+        /++
+        Params:
+            min = min inclusive
+            max = max inclusive
+        Returns: `x` such that `min <= x <= max`
+        +/
+        T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
+        {
+            return uniform!("[]", T, T, typeof(generator))(min, max, generator);
+        }
+    }
+    ///ditto
+    __gshared InsecureRandomGenerator rnd; // Can be global because it has no mutable state.
 }
