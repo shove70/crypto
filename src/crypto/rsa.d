@@ -11,8 +11,8 @@ import std.algorithm;
 import crypto.utils;
 public import crypto.padding;
 
-static if (is(typeof(crypto.utils.secureRnd)))
-    private alias rnd = crypto.utils.secureRnd; // Use secure RNG if available (replaces imported symbol `rnd`).
+//static if (is(typeof(crypto.utils.secureRnd)))
+//    private alias rnd = crypto.utils.secureRnd; // Use secure RNG if available (replaces imported symbol `rnd`).
 
 struct RSAKeyPair
 {
@@ -222,17 +222,16 @@ private:
             return true;
         }
 
+        auto primes = PRIMES[0..$].assumeSorted;
+
         if (n <= PRIMES[$ - 1])
         {
-            return canFind(PRIMES[0..$], n);
+            return equal(primes.equalRange(n), [ n ]);
         }
 
-        foreach (prime; PRIMES)
+        if (!primes.find!((prime) => (n % prime == 0)).empty)
         {
-            if (n % prime == 0)
-            {
-                return false;
-            }
+            return false;
         }
 
         BigInt[] bases;
@@ -1203,7 +1202,7 @@ For bitcoin, the hash function used by such cryptographic systems, it needs to h
     writeln(cast(string) sb);
 }
 
-void main()
+unittest
 {
     import std.stdio;
 

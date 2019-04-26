@@ -78,29 +78,29 @@ struct BigIntHelper
     }
 }
 
-__gshared InsecureRandomGenerator rnd;
+alias rnd = secureRnd;
 
-/++ Fast but cryptographically insecure source of random numbers. +/
-struct InsecureRandomGenerator
-{
-    private static Mt19937 generator;
-
-    static this()
-    {
-        generator.seed(unpredictableSeed);
-    }
-
-    /++
-    Params:
-        min = min inclusive
-        max = max inclusive
-    Returns: `x` such that `min <= x <= max`
-    +/
-    T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
-    {
-        return uniform!("[]", T, T, typeof(generator))(min, max, generator);
-    }
-}
+///++ Fast but cryptographically insecure source of random numbers. +/
+//struct InsecureRandomGenerator
+//{
+//    private static Mt19937 generator;
+//
+//    static this()
+//    {
+//        generator.seed(unpredictableSeed);
+//    }
+//
+//    /++
+//    Params:
+//        min = min inclusive
+//        max = max inclusive
+//    Returns: `x` such that `min <= x <= max`
+//    +/
+//    T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
+//    {
+//        return uniform!("[]", T, T, typeof(generator))(min, max, generator);
+//    }
+//}
 
 version (CRuntime_Bionic) version = SecureARC4Random; // ChaCha20
 version (OSX) version = SecureARC4Random; // AES
