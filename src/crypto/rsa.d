@@ -277,17 +277,7 @@ private:
             }
         }
 
-        BigInt a;
-
-        foreach (b; test_bases)
-        {
-            if (BigIntHelper.powMod(b, n, n - 1) != 1)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return (test_bases.any!((base) => (BigIntHelper.powMod(base, n, n - 1) == 1)));
     }
 
     static ubyte[] encrypt_decrypt(string T1, T2 : iPKCS = SimpleFormat)(string key, ubyte[] data, bool mixinXteaMode)
