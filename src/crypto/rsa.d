@@ -9,10 +9,8 @@ import std.range;
 import std.algorithm;
 
 import crypto.utils;
+import crypto.random;
 public import crypto.padding;
-
-//static if (is(typeof(crypto.utils.secureRnd)))
-//    private alias rnd = crypto.utils.secureRnd; // Use secure RNG if available (replaces imported symbol `rnd`).
 
 struct RSAKeyPair
 {

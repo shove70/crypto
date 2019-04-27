@@ -5,6 +5,7 @@ import std.array;
 import std.algorithm;
 
 import crypto.utils;
+import crypto.random;
 
 enum PaddingMode
 {

@@ -14,7 +14,7 @@ import crypto.padding;
 
 string key = "12341234123412341234123412341234";
 ubyte[] message = cast(ubyte[])"123412341234123412341234123412341";
-ubyte[] iv   = [1, 2, 3, 4, 5, 6, 7, 8, 0, 0, 0, 0, 1, 2, 3, 4];
+ubyte[] iv = [1, 2, 3, 4, 5, 6, 7, 8, 0, 0, 0, 0, 1, 2, 3, 4];
 
 ubyte[] buffer = AESUtils.encrypt!AES128(message, key, iv, PaddingMode.PKCS5);
 buffer = AESUtils.decrypt!AES128(buffer, key, iv, PaddingMode.PKCS5);
