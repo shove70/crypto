@@ -71,6 +71,82 @@ struct BigIntHelper
 
         BigInt temp = powMod(base, modulus, exponent / 2);
 
-        return (exponent & 1) ? (temp * temp * base) % modulus : (temp * temp) % modulus;
+        if (__VERSION__ >= 2087)
+            return (exponent & 1) ? (temp * temp * base) % modulus : (temp * temp) % modulus;
+        else
+            return (exponent & 1) ? mul(mul(temp, temp), base) % modulus : mul(temp, temp) % modulus;
+    }
+
+private:
+
+    /++
+        Bug BigInt mul() of phobos will be fixed in version 2.086.1
+        Details:
+            https://github.com/dlang/phobos/pull/6972
+    +/
+    static BigInt mul(const BigInt a, const BigInt b)
+    {
+        uint[] au = bigIntToUintArr(a);
+        uint[] bu = bigIntToUintArr(b);
+
+        uint[] r = new uint[au.length + bu.length];
+
+        for (size_t i = 0; i < bu.length; i++)
+        {
+            for (size_t j = 0; j < au.length; j++)
+            {
+                ulong t = cast(ulong)bu[i] * au[j] + r[i + j];
+                r[i + j] = t & 0xFFFF_FFFF;
+                uint c = t >> 32;
+                size_t h = i + j + 1;
+
+                while (c != 0)
+                {
+                    t = cast(ulong)c + r[h];
+                    r[h] = t & 0xFFFF_FFFF;
+                    c = t >> 32;
+                    h++;
+                }
+            }
+        }
+
+        return uintArrToBigInt(r);
+    }
+
+    static uint[] bigIntToUintArr(BigInt data)
+    {
+        uint[] arr;
+
+        while (data != 0)
+        {
+            arr ~= cast(uint)((data & 0xFFFF_FFFF).toLong);
+            data >>= 32;
+        }
+
+        return arr;
+    }
+
+    static BigInt uintArrToBigInt(const uint[] arr)
+    {
+        size_t zeros = 0;
+        foreach_reverse(d; arr)
+        {
+            if (d != 0)
+            {
+                break;
+            }
+
+            zeros++;
+        }
+
+        BigInt data = 0;
+
+        foreach_reverse (d; arr[0..$ - zeros])
+        {
+            data <<= 32;
+            data += d;
+        }
+
+        return data;
     }
 }
