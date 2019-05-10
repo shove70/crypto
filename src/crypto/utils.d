@@ -71,7 +71,7 @@ struct BigIntHelper
 
         BigInt temp = powMod(base, modulus, exponent / 2);
 
-        if (__VERSION__ >= 2087)
+        static if (__VERSION__ >= 2087)
             return (exponent & 1) ? (temp * temp * base) % modulus : (temp * temp) % modulus;
         else
             return (exponent & 1) ? mul(mul(temp, temp), base) % modulus : mul(temp, temp) % modulus;
@@ -113,14 +113,14 @@ private:
         return uintArrToBigInt(r);
     }
 
-    static uint[] bigIntToUintArr(BigInt data)
+    static uint[] bigIntToUintArr(const BigInt data)
     {
-        uint[] arr;
+        size_t n = data.uintLength();
+        uint[] arr = new uint[n];
 
-        while (data != 0)
+        for (size_t i = 0; i < n; i++)
         {
-            arr ~= cast(uint)((data & 0xFFFF_FFFF).toLong);
-            data >>= 32;
+            arr[i] = data.getDigit!uint(i);
         }
 
         return arr;
