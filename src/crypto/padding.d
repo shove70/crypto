@@ -145,6 +145,13 @@ class PaddingImpl(PaddingStuff fill, PaddingStuff suffix)
             int orgi_len;
             orgi_len = data.peek!int(data.length - 4);
 
+            enforce(((orgi_len >= 0) && (orgi_len <= (data.length - 4))), "Invalid parameter: data.");
+
+            for (size_t i = orgi_len; i < (data.length - 4); i++)
+            {
+                enforce((data[i] == 0), "Invalid parameter: data.");
+            }
+
             return cast(ubyte[])data[0..orgi_len];
         }
         else
