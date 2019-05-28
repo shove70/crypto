@@ -457,11 +457,11 @@ private:
 
         if (T == "encrypt")
         {
-            ret ~= Xtea.encrypt(data, xteaKey, rounds, PaddingMode.ISO10126);
+            ret ~= Xtea.encrypt(data, xteaKey, rounds, PaddingMode.Customized);
         }
         else
         {
-            ret ~= Xtea.decrypt(data, xteaKey, rounds, PaddingMode.ISO10126);
+            ret ~= Xtea.decrypt(data, xteaKey, rounds, PaddingMode.Customized);
         }
 
         return ret;

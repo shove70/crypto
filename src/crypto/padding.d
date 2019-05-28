@@ -3,6 +3,7 @@ module crypto.padding;
 import std.exception;
 import std.array;
 import std.algorithm;
+import std.bitmanip;
 
 import crypto.utils;
 import crypto.random;
@@ -14,46 +15,54 @@ enum PaddingMode
     ISO10126,        // 0A EB 02 04 (Random + size)
     PKCS5,           // 04 04 04 04 (All size)
     PKCS7,           // 04 04 04 04 (All size)
-    Zeros            // 00 00 00 00 (All zero)
+    Zeros,           // 00 00 00 00 (All zero)
+    Customized       // 00 00 00 00 + (00 00 00 04) (Zero + Original size)
 }
 
-alias PaddingNoPadding = PaddingImpl!("None",   "None");
-alias PaddingANSIX923  = PaddingImpl!("Zero",   "Size");
-alias PaddingISO10126  = PaddingImpl!("Random", "Size");
-alias PaddingPKCS5     = PaddingImpl!("Size",   "Size");
-alias PaddingPKCS7     = PaddingImpl!("Size",   "Size");
-alias PaddingZeros     = PaddingImpl!("Zero",   "Zero");
+private enum PaddingStuff
+{
+    None, Zero, Random, Size, OriginalSize
+}
 
-class PaddingImpl(string fill, string suffix)
+alias PaddingNoPadding  = PaddingImpl!(PaddingStuff.None,   PaddingStuff.None);
+alias PaddingANSIX923   = PaddingImpl!(PaddingStuff.Zero,   PaddingStuff.Size);
+alias PaddingISO10126   = PaddingImpl!(PaddingStuff.Random, PaddingStuff.Size);
+alias PaddingPKCS5      = PaddingImpl!(PaddingStuff.Size,   PaddingStuff.Size);
+alias PaddingPKCS7      = PaddingImpl!(PaddingStuff.Size,   PaddingStuff.Size);
+alias PaddingZeros      = PaddingImpl!(PaddingStuff.Zero,   PaddingStuff.Zero);
+alias PaddingCustomized = PaddingImpl!(PaddingStuff.Zero,   PaddingStuff.OriginalSize);   // For downward compatibility.
+
+class PaddingImpl(PaddingStuff fill, PaddingStuff suffix)
 {
     static ubyte[] padding(in ubyte[] data, size_t blockSize)
     {
         enforce(((blockSize > 0) && (blockSize % 8 == 0)), "Invalid block size, which must be a multiple of 8.");
+        static assert(((suffix != PaddingStuff.OriginalSize) || (fill == PaddingStuff.Zero)), "PaddingCustomized require: Zero + OriginalSize.");
 
-        static if ((fill == "None") || (suffix == "None"))
+        static if ((fill == PaddingStuff.None) || (suffix == PaddingStuff.None))
         {
             enforce(((data.length > 0) && (data.length % blockSize == 0)), "Invalid data size, which must be a multiple of blockSize.");
 
             return cast(ubyte[])data;
         }
-        else
+        else static if (suffix != PaddingStuff.OriginalSize)
         {
             size_t paddingSize = blockSize - data.length % blockSize;
             int index = cast(int)paddingSize - 1;
 
             ubyte[] buf = new ubyte[paddingSize];
 
-            void fillA(string type)
+            void fillA(PaddingStuff type)
             {
                 switch (type)
                 {
-                    case "Zero":
+                    case PaddingStuff.Zero:
                         buf[index] = 0x00;
                         break;
-                    case "Random":
+                    case PaddingStuff.Random:
                         buf[index] = rnd.next!ubyte;
                         break;
-                    case "Size":
+                    case PaddingStuff.Size:
                         buf[index] = cast(ubyte)paddingSize;
                         break;
                     default:
@@ -70,41 +79,56 @@ class PaddingImpl(string fill, string suffix)
 
             return data ~ buf;
         }
+        else
+        {
+            ubyte[] buf;
+
+            while ((data.length + buf.length + 4) % 8 != 0)
+            {
+                buf ~= 0x00;
+            }
+
+            ubyte[] len_buf = new ubyte[4];
+            len_buf.write!int(cast(int)data.length, 0);
+
+            return data ~ buf ~ len_buf;
+        }
     }
 
     static ubyte[] unpadding(in ubyte[] data, size_t blockSize)
     {
         enforce(((blockSize > 0) && (blockSize % 8 == 0)), "Invalid block size, which must be a multiple of 8.");
         enforce(((data.length > 0) && (data.length % blockSize == 0)), "Invalid data size, which must be a multiple of blockSize.");
+        static assert(((suffix != PaddingStuff.OriginalSize) || (fill == PaddingStuff.Zero)), "PaddingCustomized require: Zero + OriginalSize.");
 
-        static if ((fill == "None") || (suffix == "None"))
+        static if ((fill == PaddingStuff.None) || (suffix == PaddingStuff.None))
         {
             return cast(ubyte[])data;
         }
-        else static if ((fill == "Zero") && (suffix == "Size"))
+        else static if ((fill == PaddingStuff.Zero) && (suffix == PaddingStuff.Size))
         {
             size_t size = data[$ - 1];
             enforce(size <= blockSize, "Error Padding Mode.");
-            enforce(data[data.length - size .. $ - 1].all!((a) => (a == 0)), "Error Padding Mode.");
+            enforce(data[data.length - size..$ - 1].all!((a) => (a == 0)), "Error Padding Mode.");
 
             return cast(ubyte[])data[0..data.length - size];
         }
-        else static if ((fill == "Random") && (suffix == "Size"))
+        else static if ((fill == PaddingStuff.Random) && (suffix == PaddingStuff.Size))
         {
             size_t size = data[$ - 1];
             enforce(size <= blockSize, "Error Padding Mode.");
 
             return cast(ubyte[])data[0..data.length - size];
         }
-        else static if ((fill == "Size") && (suffix == "Size"))
+        else static if ((fill == PaddingStuff.Size) && (suffix == PaddingStuff.Size))
         {
             size_t size = data[$ - 1];
             enforce(size <= blockSize, "Error Padding Mode.");
-            enforce(data[data.length - size .. $ - 1].all!((a) => (a == size)), "Error Padding Mode.");
+            enforce(data[data.length - size..$ - 1].all!((a) => (a == size)), "Error Padding Mode.");
 
             return cast(ubyte[])data[0..data.length - size];
         }
-        else static if ((fill == "Zero") && (suffix == "Zero"))
+        else static if ((fill == PaddingStuff.Zero) && (suffix == PaddingStuff.Zero))
         {
             enforce(data[$ - 1] == 0, "Error Padding Mode.");
             int index = cast(int)data.length - 1;
@@ -115,6 +139,13 @@ class PaddingImpl(string fill, string suffix)
             }
 
             return cast(ubyte[])data[0..index + 1];
+        }
+        else static if ((fill == PaddingStuff.Zero) && (suffix == PaddingStuff.OriginalSize))
+        {
+            int orgi_len;
+            orgi_len = data.peek!int(data.length - 4);
+
+            return cast(ubyte[])data[0..orgi_len];
         }
         else
         {
@@ -152,6 +183,8 @@ class Padding
                 return PaddingPKCS7.padding(data, blockSize);
             case PaddingMode.Zeros:
                 return PaddingZeros.padding(data, blockSize);
+            case PaddingMode.Customized:
+                return PaddingCustomized.padding(data, blockSize);
         }
     }
 
@@ -171,6 +204,8 @@ class Padding
                 return PaddingPKCS7.unpadding(data, blockSize);
             case PaddingMode.Zeros:
                 return PaddingZeros.unpadding(data, blockSize);
+            case PaddingMode.Customized:
+                return PaddingCustomized.unpadding(data, blockSize);
         }
     }
 }

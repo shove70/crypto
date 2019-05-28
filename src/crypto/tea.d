@@ -90,7 +90,7 @@ class Tea
 
         return encrypt(input, bkey, paddingMode);
     }
-    
+
     public static ubyte[] encrypt(in ubyte[] input, int[4] key, PaddingMode paddingMode = PaddingMode.NoPadding)
     {
         ubyte[] data = Padding.padding(input, 8, paddingMode);
