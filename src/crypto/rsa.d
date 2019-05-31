@@ -274,7 +274,7 @@ private:
                 break;
             }
 
-            block = BigIntHelper.powmod(block, key.modulus, key.exponent);
+            block = BigIntHelper.powmod(block, key.exponent, key.modulus);
             ubyte[] block_buf = BigIntHelper.bigIntToUByteArray(block);
             if (T == "encrypt")
             {
@@ -364,7 +364,7 @@ private:
             return ret;
         }
 
-        block = BigIntHelper.powmod(block, key.modulus, key.exponent);
+        block = BigIntHelper.powmod(block, key.exponent, key.modulus);
         ubyte[] block_buf = BigIntHelper.bigIntToUByteArray(block);
         if (T == "encrypt")
         {

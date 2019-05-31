@@ -39,7 +39,7 @@ struct BigIntHelper
         return ret;
     }
 
-//    static BigInt powmod(BigInt base, BigInt modulus, BigInt exponent)
+//    static BigInt powmod(BigInt base, BigInt exponent, BigInt modulus)
 //    {
 //        assert(base >= 1 && exponent >= 0 && modulus >= 1);
 //
@@ -59,7 +59,7 @@ struct BigIntHelper
 //        return result;
 //    }
 
-    static BigInt powmod(const BigInt base, const BigInt modulus, const BigInt exponent)
+    static BigInt powmod(const BigInt base, const BigInt exponent, const BigInt modulus)
     {
         assert(base >= 1 && exponent >= 0 && modulus >= 1);
 
@@ -73,7 +73,7 @@ struct BigIntHelper
             return base % modulus;
         }
 
-        BigInt temp = powmod(base, modulus, exponent / 2);
+        BigInt temp = powmod(base, exponent / 2, modulus);
 
         static if (__VERSION__ >= 2087)
             return (exponent & 1) ? (temp * temp * base) % modulus : (temp * temp) % modulus;
@@ -216,7 +216,7 @@ private:
             }
         }
 
-        return (test_bases.any!((base) => (BigIntHelper.powmod(base, n, n - 1) == 1)));
+        return (test_bases.any!((base) => (powmod(base, n - 1, n) == 1)));
     }
 
 public:
