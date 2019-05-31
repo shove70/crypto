@@ -5,7 +5,6 @@ import std.array;
 import std.algorithm;
 import std.conv;
 import std.range;
-import std.algorithm;
 
 import crypto.random;
 
@@ -111,15 +110,15 @@ struct BigIntHelper
         }
         else if (n <= 341_550_071_728_320)
         {
-            bases = [BigInt(2), BigInt(3), BigInt(5), BigInt(7), BigInt(11), BigInt(13), BigInt(17)];
-        }
-        else if (n < 10_000_000_000_000_000)
-        {
             if (n == 46_856_248_255_981)
             {
                 return false;
             }
 
+            bases = [BigInt(2), BigInt(3), BigInt(5), BigInt(7), BigInt(11), BigInt(13), BigInt(17)];
+        }
+        else if (n < 10_000_000_000_000_000)
+        {
             bases = [BigInt(2), BigInt(3), BigInt(7), BigInt(61), BigInt(24251)];
         }
 

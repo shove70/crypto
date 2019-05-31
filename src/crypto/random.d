@@ -94,7 +94,7 @@ else version (Windows)
 }
 else
 {
-    ///++ Fast but cryptographically insecure source of random numbers. +/
+    /++ Fast but cryptographically insecure source of random numbers. +/
     struct InsecureRandomGenerator
     {
         private static Mt19937 generator;
