@@ -118,7 +118,7 @@ public:
         while (true)
         {
             p = generateRandomBigInt(bitLength / 2, 1, 1);
-            if (BigIntHelper.isProbablePrime(p, 40))
+            if (BigIntHelper.millerRabinPrimeTest(p, 40))
             {
                 break;
             }
@@ -126,7 +126,7 @@ public:
         while (true)
         {
             q = generateRandomBigInt(bitLength / 2, 1, 1);
-            if (BigIntHelper.isProbablePrime(q, 40))
+            if (BigIntHelper.millerRabinPrimeTest(q, 40))
             {
                 break;
             }
@@ -134,7 +134,7 @@ public:
 
         n = p * q;
         t = (p - 1) * (q - 1);
-        e = BigIntHelper.PRIMES[(rnd.next % 42) + 6500];
+        e = BigIntHelper.smallPrimeTable[(rnd.next % 42) + 6500];
 
         BigInt d = cal(e, t);
 

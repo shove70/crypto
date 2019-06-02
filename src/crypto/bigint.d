@@ -80,16 +80,16 @@ struct BigIntHelper
             return (exponent & 1) ? mul(mul(temp, temp), base) % modulus : mul(temp, temp) % modulus;
     }
 
-    static bool isProbablePrime(const BigInt n, const size_t confidence)
+    static bool millerRabinPrimeTest(const BigInt n, const size_t confidence)
     {
         if (n == 2)
         {
             return true;
         }
 
-        auto primes = PRIMES[0..$].assumeSorted;
+        auto primes = smallPrimeTable[0..$].assumeSorted;
 
-        if (n <= PRIMES[$ - 1])
+        if (n <= primes[$ - 1])
         {
             return equal(primes.equalRange(n), [ n ]);
         }
@@ -104,9 +104,17 @@ struct BigIntHelper
         {
             bases = [BigInt(2), BigInt(3)];
         }
+        else if (n <= 9_080_191)
+        {
+            bases = [BigInt(31), BigInt(73)];
+        }
         else if (n <= 4_759_123_141)
         {
             bases = [BigInt(2), BigInt(7), BigInt(61)];
+        }
+        else if (n <= 2_152_302_898_747)
+        {
+            bases = [BigInt(2), BigInt(3), BigInt(5), BigInt(7), BigInt(11)];
         }
         else if (n <= 341_550_071_728_320)
         {
@@ -121,8 +129,21 @@ struct BigIntHelper
         {
             bases = [BigInt(2), BigInt(3), BigInt(7), BigInt(61), BigInt(24251)];
         }
+        else
+        {
+            bases = new BigInt[confidence];
+            for (int i = 0; i < confidence; i++)
+            {
+                /**
+                Generate random numbers between 2 and n-1,
+                because the premise of this condition branching is n >= 10_000_000_000_000_000,
+                so it only needs to limit the minimum value.
+                */
+                bases[i] = rnd.next!uint(2, uint.max);// test_bases[i] = rnd.next % (n - 2) + 2;
+            }
+        }
 
-        return millerRabinPrimeTest(n, bases, confidence);
+        return (bases.any!((base) => (powmod(base, n - 1, n) == 1)));
     }
 
 private:
@@ -198,29 +219,9 @@ private:
         return data;
     }
 
-    static bool millerRabinPrimeTest(const BigInt n, const BigInt[] bases, const size_t confidence)
-    {
-        BigInt[] test_bases;
-
-        if (bases.length)
-        {
-            test_bases = bases.dup;
-        }
-        else
-        {
-            test_bases = new BigInt[confidence];
-            for (int i = 0; i < confidence; i++)
-            {
-                test_bases[i] = rnd.next % (n - 2) + 2;
-            }
-        }
-
-        return (test_bases.any!((base) => (powmod(base, n - 1, n) == 1)));
-    }
-
 public:
 
-    immutable static uint[] PRIMES = [  // length: 6543
+    immutable static uint[] smallPrimeTable = [  // length: 6543
         2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61,
         67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137,
         139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211,

@@ -1,6 +1,6 @@
 module crypto.random;
 
-import std.traits : Unqual;
+import std.traits : isIntegral;
 import std.random;
 
 version (CRuntime_Bionic) version = SecureARC4Random; // ChaCha20
@@ -23,7 +23,7 @@ version (SecureARC4Random)
             max = max inclusive
         Returns: `x` such that `min <= x <= max`
         +/
-        T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
+        T next(T = uint)(T min = T.min, T max = T.max) if (isIntegral!T)
         {
             if (min == T.min && max == T.max)
                 return cast(T) arc4random();
@@ -110,7 +110,7 @@ else
             max = max inclusive
         Returns: `x` such that `min <= x <= max`
         +/
-        T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
+        T next(T = uint)(T min = T.min, T max = T.max) if (isIntegral!T)
         {
             return uniform!("[]", T, T, typeof(generator))(min, max, generator);
         }
