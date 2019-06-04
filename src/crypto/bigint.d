@@ -82,6 +82,10 @@ struct BigIntHelper
 
     static bool millerRabinPrimeTest(const BigInt n, const size_t confidence)
     {
+        if (n < 2)
+        {
+            return false;
+        }
         if (n == 2)
         {
             return true;
@@ -143,7 +147,7 @@ struct BigIntHelper
             }
         }
 
-        return (bases.any!((base) => (powmod(base, n - 1, n) == 1)));
+        return (bases.all!((base) => (powmod(base, n - 1, n) == 1)));
     }
 
 private:
