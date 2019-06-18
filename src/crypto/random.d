@@ -60,7 +60,7 @@ else version (Windows)
             max = max inclusive
         Returns: `x` such that `min <= x <= max`
         +/
-        T next(T = uint)(T min = T.min, T max = T.max) if (is(Unqual!T == uint) || is(Unqual!T == int) || is(Unqual!T == ubyte) || is(Unqual!T == byte))
+        T next(T = uint)(T min = T.min, T max = T.max) if (isIntegral!T)
         {
             return uniform!("[]", T, T)(min, max, this);
         }
