@@ -1,0 +1,5 @@
+/.project
+/.dub/
+/dub.selections.json
+/libcrypto.a
+/crypto.lib
