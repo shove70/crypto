@@ -115,26 +115,24 @@ public:
 
         BigInt p, q, n, t, e;
 
-        while (true)
+        do
         {
-            p = generateRandomBigInt(bitLength / 2, 1, 1);
-            if (BigIntHelper.millerRabinPrimeTest(p, 40))
-            {
-                break;
-            }
+            p = BigIntHelper.randomGenerate(bitLength / 2, 1, 1);
         }
-        while (true)
+        while (!BigIntHelper.millerRabinPrimeTest(p, 40));
+        do
         {
-            q = generateRandomBigInt(bitLength / 2, 1, 1);
-            if (BigIntHelper.millerRabinPrimeTest(q, 40))
-            {
-                break;
-            }
+            q = BigIntHelper.randomGenerate(bitLength / 2, 1, 1);
         }
+        while (!BigIntHelper.millerRabinPrimeTest(q, 40));
 
         n = p * q;
         t = (p - 1) * (q - 1);
-        e = BigIntHelper.smallPrimeTable[(rnd.next % 42) + 6500];
+        do
+        {
+            e = BigIntHelper.randomGenerate(BigInt(60013), BigInt(65537));
+        }
+        while (!BigIntHelper.millerRabinPrimeTest(e, 40));
 
         BigInt d = cal(e, t);
 
@@ -172,44 +170,6 @@ public:
     }
 
 private:
-
-    static BigInt generateRandomBigInt(uint bitLength, int highBit = -1, int lowBit = -1)
-    {
-        ubyte[] buffer = new ubyte[bitLength / 8];
-
-        uint pos = 0;
-        uint current = 0;
-        foreach (ref a; buffer)
-        {
-            if (pos == 0)
-            {
-                current = rnd.next;
-            }
-
-            a = cast(ubyte)(current >> 8 * pos);
-            pos = (pos + 1) % uint.sizeof;
-        }
-
-        if (highBit == 0)
-        {
-            buffer[0] &= (0xFF >> 1);
-        }
-        else if (highBit == 1)
-        {
-            buffer[0] |= (0x01 << 7);
-        }
-
-        if (lowBit == 0)
-        {
-            buffer[$ - 1] &= (0xFF << 1);
-        }
-        else if (lowBit == 1)
-        {
-            buffer[$ - 1] |= 0x01;
-        }
-
-        return BigIntHelper.bigIntFromUByteArray(buffer);
-    }
 
     static ubyte[] encrypt_decrypt(string T1, T2 : iPKCS = SimpleFormat)(string key, ubyte[] data, bool mixinXteaMode)
     if (T1 == "encrypt" || T1 == "decrypt")

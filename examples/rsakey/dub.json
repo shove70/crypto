@@ -7,7 +7,7 @@
     "targetName": "rsakey",
     "dependencies": {
         "crypto": {
-			"path": "../../"
-		}
+            "path": "../../"
+        }
     }
 }
