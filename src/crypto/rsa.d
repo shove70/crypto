@@ -451,6 +451,7 @@ For bitcoin, the hash function used by such cryptographic systems, it needs to h
     writeln(cast(string) sb);
 }
 
+// for mixinXteaMode
 unittest
 {
     import std.stdio;
@@ -472,7 +473,7 @@ For bitcoin, the hash function used by such cryptographic systems, it needs to h
     `;
 
     ubyte[] sb = cast(ubyte[]) data;
-    ubyte[] db = RSA.encrypt(pri_key, sb);
-    sb = RSA.decrypt(pub_key, db);
+    ubyte[] db = RSA.encrypt(pri_key, sb, true);
+    sb = RSA.decrypt(pub_key, db, true);
     writeln(cast(string) sb);
 }
