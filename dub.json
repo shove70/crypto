@@ -4,6 +4,13 @@
     "description": "A D Library of encrypto, decrypto(3DES, AES, TEA, RSA...), encode, hash, and message digital signatures.",
     "license": "MIT License",
     "copyright": "Copyright © 2018, Shove",
-    "dependencies": {},
-    "targetName": "crypto"
+    "importPaths": [
+        "src"
+    ],
+    "sourcePaths": [
+        "src"
+    ],
+    "targetName": "crypto",
+    "targetType": "library",
+    "dependencies": {}
 }

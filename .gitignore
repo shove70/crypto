@@ -3,3 +3,5 @@
 /dub.selections.json
 /libcrypto.a
 /crypto.lib
+/crypto
+/crypto.exe

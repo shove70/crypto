@@ -113,28 +113,32 @@ public:
             return ans;
         }
 
-        BigInt p, q, n, t, e;
+        size_t confidence;
+        if (bitLength <= 128)       confidence = 50;
+        else if (bitLength <= 256)  confidence = 27;
+        else if (bitLength <= 512)  confidence = 15;
+        else if (bitLength <= 768)  confidence = 8;
+        else if (bitLength <= 1024) confidence = 4;
+        else if (bitLength <= 2048) confidence = 2;
+        else                        confidence = 1;
+
+        BigInt p, q, n, t, e, d;
 
         do
         {
             p = BigIntHelper.randomGenerate(bitLength / 2, 1, 1);
         }
-        while (!BigIntHelper.millerRabinPrimeTest(p, 40));
+        while (!BigIntHelper.millerRabinPrimeTest(p, confidence));
         do
         {
             q = BigIntHelper.randomGenerate(bitLength / 2, 1, 1);
         }
-        while (!BigIntHelper.millerRabinPrimeTest(q, 40));
+        while (!BigIntHelper.millerRabinPrimeTest(q, confidence));
 
         n = p * q;
         t = (p - 1) * (q - 1);
-        do
-        {
-            e = BigIntHelper.randomGenerate(BigInt(60013), BigInt(65537));
-        }
-        while (!BigIntHelper.millerRabinPrimeTest(e, 40));
-
-        BigInt d = cal(e, t);
+        e = BigIntHelper.partialPrimesTable[rnd.next(1, cast(int)BigIntHelper.partialPrimesTable.length) - 1];
+        d = cal(e, t);
 
         return RSAKeyPair(encodeKey(n, d), encodeKey(n, e));
     }
@@ -450,16 +454,12 @@ For bitcoin, the hash function used by such cryptographic systems, it needs to h
 unittest
 {
     import std.stdio;
-
     import std.bigint;
+
     import crypto.rsa;
 
-    RSAKeyPair keyPair = RSA.generateKeyPair(1024);
-    writeln(keyPair.privateKey);
-    writeln(keyPair.publicKey);
-
-    RSAKeyInfo pri_key = RSA.decodeKey(keyPair.privateKey);
-    RSAKeyInfo pub_key = RSA.decodeKey(keyPair.publicKey);
+    RSAKeyInfo pri_key = RSA.decodeKey("AAAAgIK4Z4ILSqaqdFwMLgZJpaymfvk00u5UgIRMdk3E6hgEVklqgc+U5EzLh9krrww+CXaRpiPGlZJu7hE1hCly/l8DuqpwGhQrdbyz6hOQRPZAN/otgR49KcQfmTgRMUMlAXCIxCen3U0Kvn3Vo70tkfCI/sWJdcotly9Wsjl5GnarRInb77iwqXCWaI8eWojRvRQgrcWqKLGGNaIFKd+AZLklYhU+IagiHaO91MNwXM8z34wSEBqAjUZTwdXnGY0Jc3CEaO5MXviHXZ4EALhZ+vgd+YzhbtGhl8ZEcre261DQje1fi0UmzvfMafNDmM4YV3fZoyeFa+Thc5xfTUlnU98=");
+    RSAKeyInfo pub_key = RSA.decodeKey("AAAAgIK4Z4ILSqaqdFwMLgZJpaymfvk00u5UgIRMdk3E6hgEVklqgc+U5EzLh9krrww+CXaRpiPGlZJu7hE1hCly/l8DuqpwGhQrdbyz6hOQRPZAN/otgR49KcQfmTgRMUMlAXCIxCen3U0Kvn3Vo70tkfCI/sWJdcotly9Wsjl5Gnar758=");
 
     string data = `
 And the workload proves (POW) reusable workload proof (RPOW) 2. hash function
