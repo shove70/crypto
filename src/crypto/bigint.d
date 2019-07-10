@@ -165,10 +165,15 @@ struct BigIntHelper
         }
         else
         {
-            // Generate random numbers between 2 and n - 1.
+            /**
+            Although in theory base should be between 2 and n - 1, because confidence is optimized before call,
+            the larger n is, the smaller confidence is, so the requirement for base can not be too small,
+            so the minimum value does not use 2, but uses n / 2 instead.
+            */
             bases = new BigInt[confidence];
             import std.algorithm.iteration : each;
-            bases.each!((ref b) => (b = randomGenerate(BigInt(2), n - 1)));
+            bases.each!((ref b) => (b = randomGenerate(n / 2, n - 1)));
+            //bases.each!((ref b) => (b = randomGenerate(BigInt(2), n - 1)));
         }
 
         import std.algorithm.searching : all;
