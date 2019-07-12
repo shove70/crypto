@@ -1,18 +1,17 @@
 module crypto.bigint;
 
 import std.bigint;
-import std.array : Appender;
 import std.algorithm.mutation : reverse;
+import std.algorithm.searching : find;
 import std.conv : to, text;
 import std.exception : enforce;
+import std.range : repeat, array;
 
 import crypto.random;
 
 struct BigIntHelper
 {
-    /**
-    Random generate a BigInt by bitLength.
-    */
+    /// Random generate a BigInt by bitLength.
     static BigInt randomGenerate(uint bitLength, int highBit = -1, int lowBit = -1)
     {
         enforce((bitLength > 0) && (bitLength % 8 == 0));
@@ -50,12 +49,10 @@ struct BigIntHelper
             buffer[$ - 1] |= 0x01;
         }
 
-        return BigIntHelper.bigIntFromUByteArray(buffer);
+        return BigIntHelper.fromBytes(buffer);
     }
 
-    /**
-    Random generate a BigInt between min and max.
-    */
+    /// Random generate a BigInt between min and max.
     static BigInt randomGenerate(const BigInt min, const BigInt max)
     {
         enforce(max >= min, text("BigIntHelper.randomGenerate(): invalid bounding interval ", min, ", ", max));
@@ -65,33 +62,52 @@ struct BigIntHelper
     }
 
     ///
-    static ubyte[] bigIntToUByteArray(BigInt value)
+    static ubyte[] toUBytes(const BigInt value) pure nothrow
     {
-        Appender!(ubyte[]) app;
+        size_t len = value.uintLength();
+        ubyte[] ubytes = new ubyte[len * uint.sizeof];
 
-        while (value > 0)
+        for (size_t i = 0; i < len; i++)
         {
-            app.put((value - ((value >> 8) << 8)).to!ubyte);
-            value >>= 8;
+            uint digit = value.getDigit!uint(i);
+            ubyte* p = cast(ubyte*)&digit;
+
+            for (size_t j = 0; j < uint.sizeof; j++)
+            {
+                ubytes[(len - i - 1) * uint.sizeof + (uint.sizeof - j - 1)] = *(p + j);
+            }
         }
 
-        reverse(app.data);
-
-        return app.data;
+        return ubytes.find!((a, b) => a != b)(0);
     }
 
-    ///
-    static BigInt bigIntFromUByteArray(in ubyte[] buffer)
+    /++
+        Because std.bigint's member `data` is a private property,
+        and there is no API `setDigit` that opens the opposite of getDigit,
+        it can only be shifted by digits one by one.
+        !! Here is a performance bottleneck.
+    +/
+    static BigInt fromBytes(in ubyte[] buffer) pure nothrow
     {
-        BigInt ret = BigInt("0");
+        size_t supplement = (uint.sizeof - buffer.length % uint.sizeof) % uint.sizeof;
+        ubyte[] bytes = (supplement > 0) ? (cast(ubyte)0).repeat(supplement).array ~ buffer : cast(ubyte[])buffer;
+        BigInt data = 0;
 
-        for (uint i; i < buffer.length; i++)
+        for (size_t i = 0; i < bytes.length / uint.sizeof; i++)
         {
-            ret <<= 8;
-            ret += buffer[i];
+            uint digit;
+            ubyte* p = cast(ubyte*)&digit;
+
+            for (size_t j = 0; j < uint.sizeof; j++)
+            {
+                *(p + j) = bytes[i * uint.sizeof + uint.sizeof - j - 1];
+            }
+
+            data <<= 32;
+            data += digit;
         }
 
-        return ret;
+        return data;
     }
 
     static if (__VERSION__ >= 2087)
@@ -99,7 +115,7 @@ struct BigIntHelper
     else
     {
         ///
-        static BigInt powmod(const BigInt base, const BigInt exponent, const BigInt modulus)
+        static BigInt powmod(const BigInt base, const BigInt exponent, const BigInt modulus) pure nothrow
         {
             assert(base >= 1 && exponent >= 0 && modulus >= 1);
 
@@ -194,69 +210,72 @@ private:
         Details:
             https://github.com/dlang/phobos/pull/6972
     +/
-    static BigInt mul(const BigInt a, const BigInt b)
+    static if (__VERSION__ < 2087)
     {
-        uint[] au = bigIntToUintArr(a);
-        uint[] bu = bigIntToUintArr(b);
-
-        uint[] r = new uint[au.length + bu.length];
-
-        for (size_t i = 0; i < bu.length; i++)
+        static BigInt mul(const BigInt a, const BigInt b) pure nothrow
         {
-            for (size_t j = 0; j < au.length; j++)
-            {
-                ulong t = cast(ulong)bu[i] * au[j] + r[i + j];
-                r[i + j] = t & 0xFFFF_FFFF;
-                uint c = t >> 32;
-                size_t h = i + j + 1;
+            uint[] au = toUintArray(a);
+            uint[] bu = toUintArray(b);
 
-                while (c != 0)
+            uint[] r = new uint[au.length + bu.length];
+
+            for (size_t i = 0; i < bu.length; i++)
+            {
+                for (size_t j = 0; j < au.length; j++)
                 {
-                    t = cast(ulong)c + r[h];
-                    r[h] = t & 0xFFFF_FFFF;
-                    c = t >> 32;
-                    h++;
+                    ulong t = cast(ulong)bu[i] * au[j] + r[i + j];
+                    r[i + j] = t & 0xFFFF_FFFF;
+                    uint c = t >> 32;
+                    size_t h = i + j + 1;
+
+                    while (c != 0)
+                    {
+                        t = cast(ulong)c + r[h];
+                        r[h] = t & 0xFFFF_FFFF;
+                        c = t >> 32;
+                        h++;
+                    }
                 }
             }
+
+            return fromUintArray(r);
         }
 
-        return uintArrToBigInt(r);
-    }
-
-    static uint[] bigIntToUintArr(const BigInt data)
-    {
-        size_t n = data.uintLength();
-        uint[] arr = new uint[n];
-
-        for (size_t i = 0; i < n; i++)
+        static uint[] toUintArray(const BigInt data) pure nothrow
         {
-            arr[i] = data.getDigit!uint(i);
-        }
+            size_t n = data.uintLength();
+            uint[] arr = new uint[n];
 
-        return arr;
-    }
-
-    static BigInt uintArrToBigInt(const uint[] arr)
-    {
-        size_t zeros = 0;
-        foreach_reverse(d; arr)
-        {
-            if (d != 0)
+            for (size_t i = 0; i < n; i++)
             {
-                break;
+                arr[i] = data.getDigit!uint(i);
             }
 
-            zeros++;
+            return arr;
         }
 
-        BigInt data = 0;
-
-        foreach_reverse (d; arr[0..$ - zeros])
+        static BigInt fromUintArray(const uint[] arr) pure nothrow
         {
-            data <<= 32;
-            data += d;
-        }
+            size_t zeros = 0;
+            foreach_reverse (d; arr)
+            {
+                if (d != 0)
+                {
+                    break;
+                }
 
-        return data;
+                zeros++;
+            }
+
+            BigInt data = 0;
+
+            foreach_reverse (d; arr[0..$ - zeros])
+            {
+                data <<= 32;
+                data += d;
+            }
+
+            return data;
+        }
     }
 }

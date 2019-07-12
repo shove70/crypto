@@ -204,7 +204,7 @@ private:
             {
                 ubyte[] block = data[0 .. ($ >= keySize) ? keySize : $];
                 blockSize = block.length;
-                return BigIntHelper.bigIntFromUByteArray(block);
+                return BigIntHelper.fromBytes(block);
             }
             else
             {
@@ -215,7 +215,7 @@ private:
                 while (true)
                 {
                     ubyte[] block = [preamble] ~ data[0 .. blockSize];
-                    BigInt t = BigIntHelper.bigIntFromUByteArray(block);
+                    BigInt t = BigIntHelper.fromBytes(block);
                     if (t >= key.modulus)
                     {
                         blockSize--;
@@ -239,7 +239,7 @@ private:
             }
 
             block = BigIntHelper.powmod(block, key.exponent, key.modulus);
-            ubyte[] block_buf = BigIntHelper.bigIntToUByteArray(block);
+            ubyte[] block_buf = BigIntHelper.toUBytes(block);
             static if (T == "encrypt")
             {
                 for (size_t i; i < keySize - block_buf.length; i++)
@@ -294,7 +294,7 @@ private:
             {
                 ubyte[] block = data[0 .. ($ >= keySize) ? keySize : $];
                 blockSize = block.length;
-                return BigIntHelper.bigIntFromUByteArray(block);
+                return BigIntHelper.fromBytes(block);
             }
             else
             {
@@ -305,7 +305,7 @@ private:
                 while (true)
                 {
                     ubyte[] block = [preamble] ~ data[0 .. blockSize];
-                    BigInt t = BigIntHelper.bigIntFromUByteArray(block);
+                    BigInt t = BigIntHelper.fromBytes(block);
                     if (t >= key.modulus)
                     {
                         blockSize--;
@@ -329,7 +329,7 @@ private:
         }
 
         block = BigIntHelper.powmod(block, key.exponent, key.modulus);
-        ubyte[] block_buf = BigIntHelper.bigIntToUByteArray(block);
+        ubyte[] block_buf = BigIntHelper.toUBytes(block);
         static if (T == "encrypt")
         {
             for (size_t i; i < keySize - block_buf.length; i++)
@@ -375,8 +375,8 @@ class SimpleFormat : iPKCS
 {
     static string encodeKey(BigInt modulus, BigInt exponent)
     {
-        ubyte[] m_bytes = BigIntHelper.bigIntToUByteArray(modulus);
-        ubyte[] e_bytes = BigIntHelper.bigIntToUByteArray(exponent);
+        ubyte[] m_bytes = BigIntHelper.toUBytes(modulus);
+        ubyte[] e_bytes = BigIntHelper.toUBytes(exponent);
 
         ubyte[] buffer = new ubyte[4];
 
@@ -394,8 +394,8 @@ class SimpleFormat : iPKCS
         ubyte[] modulus_bytes = buffer[4 .. 4 + m_len];
         ubyte[] exponent_bytes = buffer[4 + m_len .. $];
 
-        return Nullable!RSAKeyInfo(RSAKeyInfo(BigIntHelper.bigIntFromUByteArray(modulus_bytes),
-                modulus_bytes, BigIntHelper.bigIntFromUByteArray(exponent_bytes), exponent_bytes));
+        return Nullable!RSAKeyInfo(RSAKeyInfo(BigIntHelper.fromBytes(modulus_bytes),
+                modulus_bytes, BigIntHelper.fromBytes(exponent_bytes), exponent_bytes));
     }
 }
 
