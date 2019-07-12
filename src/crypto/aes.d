@@ -398,7 +398,7 @@ class AESUtils
 
         scope aes = new T1(bkey, iv);
 
-        if (T2 == "encrypt")
+        static if (T2 == "encrypt")
         {
             return aes.encrypt(buffer, paddingMode);
         }

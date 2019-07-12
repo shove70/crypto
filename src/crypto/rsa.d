@@ -200,7 +200,7 @@ private:
                 return BigInt("0");
             }
 
-            if (T == "decrypt")
+            static if (T == "decrypt")
             {
                 ubyte[] block = data[0 .. ($ >= keySize) ? keySize : $];
                 blockSize = block.length;
@@ -240,7 +240,7 @@ private:
 
             block = BigIntHelper.powmod(block, key.exponent, key.modulus);
             ubyte[] block_buf = BigIntHelper.bigIntToUByteArray(block);
-            if (T == "encrypt")
+            static if (T == "encrypt")
             {
                 for (size_t i; i < keySize - block_buf.length; i++)
                 {
@@ -290,7 +290,7 @@ private:
                 return BigInt("0");
             }
 
-            if (T == "decrypt")
+            static if (T == "decrypt")
             {
                 ubyte[] block = data[0 .. ($ >= keySize) ? keySize : $];
                 blockSize = block.length;
@@ -330,7 +330,7 @@ private:
 
         block = BigIntHelper.powmod(block, key.exponent, key.modulus);
         ubyte[] block_buf = BigIntHelper.bigIntToUByteArray(block);
-        if (T == "encrypt")
+        static if (T == "encrypt")
         {
             for (size_t i; i < keySize - block_buf.length; i++)
             {
@@ -352,7 +352,7 @@ private:
 
         data = data[blockSize .. $];
 
-        if (T == "encrypt")
+        static if (T == "encrypt")
         {
             ret ~= Xtea.encrypt(data, xteaKey, rounds, PaddingMode.Customized);
         }
