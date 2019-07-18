@@ -8,7 +8,7 @@ https://github.com/shove70/shove.c
 
 ### AES:
 
-```
+```d
 import crypto.aes;
 import crypto.padding;
 
@@ -24,7 +24,7 @@ assert(message == buffer);
 
 ### XTEA:
 
-```
+```d
 import crypto.tea.xtea;
 import crypto.padding;
 
@@ -40,7 +40,7 @@ assert(message == buffer);
 
 ### RSA:
 
-```
+```d
 import crypto.rsa;
 
 RSAKeyPair keyPair = RSA.generateKeyPair(1024);
