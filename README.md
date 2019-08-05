@@ -71,10 +71,12 @@ writeln(cast(string)de);
 
 assert(cast(string)de = data);
 ```
+
 ### Thanks
 
 * @n8sh
 * @Boris-Barboris
+* @DarkRiDDeR
 
 ### Other
 
