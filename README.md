@@ -22,6 +22,22 @@ buffer = AESUtils.decrypt!AES128(buffer, key, iv, PaddingMode.PKCS5);
 assert(message == buffer);
 ```
 
+### Blake2b:
+
+```d
+import crypto.blake2.blake2b;
+import crypto.hex;
+import std.base64;
+import std.digest.crc;
+
+ubyte[] hash;
+ubyte[] hashResult = hexBytes("28248967dc89fdbdaea74cb99ceec5cd4e06547f095b83d31e9a580bb739a539c077a295ef76b0ef5e8b83abe7a5f82d48639566bececfa6b80c9ec4a6a80889");
+assert(blake2b!B512(hash, cast(ubyte[])"Blake2b") == 0);
+assert(hash == hashResult);
+assert(toHexString!(LetterCase.lower)(hash) == "28248967dc89fdbdaea74cb99ceec5cd4e06547f095b83d31e9a580bb739a539c077a295ef76b0ef5e8b83abe7a5f82d48639566bececfa6b80c9ec4a6a80889");
+assert(Base64.encode(hash) == "KCSJZ9yJ/b2up0y5nO7FzU4GVH8JW4PTHppYC7c5pTnAd6KV73aw716Lg6vnpfgtSGOVZr7Oz6a4DJ7EpqgIiQ==");
+```
+
 ### XTEA:
 
 ```d
@@ -55,10 +71,12 @@ writeln(cast(string)de);
 
 assert(cast(string)de = data);
 ```
+
 ### Thanks
 
 * @n8sh
 * @Boris-Barboris
+* @DarkRiDDeR
 
 ### Other
 
