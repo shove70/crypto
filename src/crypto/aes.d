@@ -199,9 +199,13 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
 
     ~this()
     {
-        w[]  = 0;
-        dw[] = 0;
-        iv[] = 0;
+        import zero_memory : secureZeroMemory;
+        secureZeroMemory(w.ptr, w.length);
+        secureZeroMemory(dw.ptr, dw.length);
+        secureZeroMemory(iv.ptr, iv.length);
+        //w[]  = 0;
+        //dw[] = 0;
+        //iv[] = 0;
     }
 
     public ubyte[] encrypt(in ubyte[] buffer, PaddingMode paddingMode)

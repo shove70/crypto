@@ -5,7 +5,7 @@ import crypto.rsa;
 
 void main(string[] argv)
 {
-    int bits = 256;
+    int bits = 1024;
 
     if (argv.length > 1)
     {
@@ -15,7 +15,7 @@ void main(string[] argv)
         }
         catch(Throwable)
         {
-            writeln("Parameter " ~ argv[1] ~ " error. Usage: 128 | 256 | 512 | 1024 ...");
+            writeln("Parameter " ~ argv[1] ~ " error. Usage: 128 | 256 | 512 | 1024 | 2048 ...");
             return;
         }
 

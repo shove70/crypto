@@ -19,7 +19,9 @@ package struct TEA
 
     ~this()
     {
-        m_key[] = 0;
+        import zero_memory : secureZeroMemory;
+        secureZeroMemory(m_key.ptr, m_key.length);
+        //m_key[] = 0;
     }
 
     /// Encrypt given ubyte array (length to be crypted must be 8 ubyte aligned)
@@ -143,6 +145,13 @@ package struct XTEA
     {
         m_key    = key;
         m_rounds = rounds;
+    }
+
+    ~this()
+    {
+        import zero_memory : secureZeroMemory;
+        secureZeroMemory(m_key.ptr, m_key.length);
+        //m_key[] = 0;
     }
 
     /// Encrypt given ubyte array (length to be crypted must be 8 ubyte aligned)

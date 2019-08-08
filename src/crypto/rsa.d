@@ -64,9 +64,10 @@ class RSA
 {
 public:
 
-    static RSAKeyPair generateKeyPair(uint bitLength = 1024)
+    static RSAKeyPair generateKeyPair(uint bitLength = 2048)
     {
-        assert((bitLength >= 128) && (bitLength % 8 == 0), "Bitlength is required to be a multiple of 8 and not less than 128.");
+        assert((bitLength >= 128) && (bitLength % 8 == 0),
+            "Bitlength is required to be a multiple of 8 and not less than 128. It’s recommended that it be no less than 2048.");
 
         BigInt x, y;
 
@@ -107,7 +108,7 @@ public:
 
             if (ans < 0)
             {
-                ans = ans += k;
+                ans += k;
             }
 
             return ans;
@@ -119,8 +120,7 @@ public:
         else if (bitLength <= 512)  confidence = 15;
         else if (bitLength <= 768)  confidence = 8;
         else if (bitLength <= 1024) confidence = 4;
-        else if (bitLength <= 2048) confidence = 2;
-        else                        confidence = 1;
+        else                        confidence = 2;
 
         BigInt p, q, n, t, e, d;
 
@@ -128,16 +128,16 @@ public:
         {
             p = BigIntHelper.randomGenerate(bitLength / 2, 1, 1);
         }
-        while (!BigIntHelper.millerRabinPrimeTest(p, confidence));
+        while (!BigIntHelper.isProbablePrime(p, confidence));
         do
         {
             q = BigIntHelper.randomGenerate(bitLength / 2, 1, 1);
         }
-        while (!BigIntHelper.millerRabinPrimeTest(q, confidence));
+        while (!BigIntHelper.isProbablePrime(q, confidence));
 
         n = p * q;
         t = (p - 1) * (q - 1);
-        e = BigIntHelper.partialPrimesTable[rnd.next(1, cast(int)BigIntHelper.partialPrimesTable.length) - 1];
+        e = 65537;
         d = cal(e, t);
 
         return RSAKeyPair(encodeKey(n, d), encodeKey(n, e));
