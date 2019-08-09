@@ -77,6 +77,7 @@ assert(cast(string)de = data);
 * @n8sh
 * @Boris-Barboris
 * @DarkRiDDeR
+* @Cédric Picard
 
 ### Other
 

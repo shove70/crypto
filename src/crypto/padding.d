@@ -161,13 +161,10 @@ class PaddingImpl(PaddingStuff fill, PaddingStuff suffix)
 
 unittest
 {
-    import std.stdio;
     ubyte[] data = [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07];
     ubyte[] paddinged = PaddingPKCS5.padding(data, 8);
-    writeln(paddinged);
-
-    data = PaddingPKCS5.unpadding(paddinged, 8);
-    writeln(data);
+    ubyte[] unpaddinged = PaddingPKCS5.unpadding(paddinged, 8);
+    assert(data == unpaddinged);
 }
 
 class Padding

@@ -1,21 +1,21 @@
 {
-	"authors": [
-		"Shove"
-	],
-	"copyright": "Copyright © 2018, Shove",
-	"dependencies": {
-		"intel-intrinsics": "~>1.1.1",
-		"zero-memory": "~>0.1.0"
-	},
-	"description": "A D Library of encrypto, decrypto(3DES, AES, TEA, RSA...), encode, hash, and message digital signatures.",
-	"importPaths": [
-		"src"
-	],
-	"license": "MIT License",
-	"name": "crypto",
-	"sourcePaths": [
-		"src"
-	],
-	"targetName": "crypto",
-	"targetType": "library"
+    "authors": [
+        "Shove"
+    ],
+    "copyright": "Copyright © 2018, Shove",
+    "dependencies": {
+        "intel-intrinsics": "~>1.1.1",
+        "zero-memory": "~>0.1.3"
+    },
+    "description": "A D Library of encrypto, decrypto(3DES, AES, TEA, RSA...), encode, hash, and message digital signatures.",
+    "importPaths": [
+        "src"
+    ],
+    "license": "MIT License",
+    "name": "crypto",
+    "sourcePaths": [
+        "src"
+    ],
+    "targetName": "crypto",
+    "targetType": "library"
 }

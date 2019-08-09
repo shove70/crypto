@@ -138,15 +138,12 @@ public class Base58
 
         return cast(byte) remainder;
     }
+}
 
-    unittest
-    {
-        import std.stdio;
-        import crypto.base58;
-
-        string str = Base58.encode(cast(byte[]) "abcdef1234");
-        writeln(str);
-        byte[] buf = Base58.decode(str);
-        writeln(cast(string) buf);
-    }
+unittest
+{
+    string data = "abcdef1234";
+    string en = Base58.encode(cast(byte[]) data);
+    byte[] de = Base58.decode(en);
+    assert(data == cast(string) de);
 }

@@ -155,39 +155,39 @@ public:
 
     static ubyte[] encrypt(T : iPKCS = SimpleFormat)(string key, ubyte[] data, bool mixinXteaMode = false)
     {
-        return encrypt_decrypt!("encrypt", T)(key, data, mixinXteaMode);
+        return crypt!("encrypt", T)(key, data, mixinXteaMode);
     }
 
     static ubyte[] encrypt(RSAKeyInfo key, ubyte[] data, bool mixinXteaMode = false)
     {
-        return encrypt_decrypt!"encrypt"(key, data, mixinXteaMode);
+        return crypt!"encrypt"(key, data, mixinXteaMode);
     }
 
     static ubyte[] decrypt(T : iPKCS = SimpleFormat)(string key, ubyte[] data, bool mixinXteaMode = false)
     {
-        return encrypt_decrypt!("decrypt", T)(key, data, mixinXteaMode);
+        return crypt!("decrypt", T)(key, data, mixinXteaMode);
     }
 
     static ubyte[] decrypt(RSAKeyInfo key, ubyte[] data, bool mixinXteaMode = false)
     {
-        return encrypt_decrypt!"decrypt"(key, data, mixinXteaMode);
+        return crypt!"decrypt"(key, data, mixinXteaMode);
     }
 
 private:
 
-    static ubyte[] encrypt_decrypt(string T1, T2 : iPKCS = SimpleFormat)(string key, ubyte[] data, bool mixinXteaMode)
+    static ubyte[] crypt(string T1, T2 : iPKCS = SimpleFormat)(string key, ubyte[] data, bool mixinXteaMode)
     if (T1 == "encrypt" || T1 == "decrypt")
     {
         RSAKeyInfo ki = decodeKey!T2(key);
-        return encrypt_decrypt!(T1)(ki, data, mixinXteaMode);
+        return crypt!(T1)(ki, data, mixinXteaMode);
     }
 
-    static ubyte[] encrypt_decrypt(string T)(RSAKeyInfo key, ubyte[] data, bool mixinXteaMode)
+    static ubyte[] crypt(string T)(RSAKeyInfo key, ubyte[] data, bool mixinXteaMode)
     if (T == "encrypt" || T == "decrypt")
     {
         if (mixinXteaMode)
         {
-            return encrypt_decrypt_mixinXteaMode!T(key, data);
+            return crypt_mixinXteaMode!T(key, data);
         }
         
         size_t keySize = key.modulus_bytes.length;
@@ -259,7 +259,7 @@ private:
         return ret;
     }
     
-    static ubyte[] encrypt_decrypt_mixinXteaMode(string T)(RSAKeyInfo key, ubyte[] data)
+    static ubyte[] crypt_mixinXteaMode(string T)(RSAKeyInfo key, ubyte[] data)
     if (T == "encrypt" || T == "decrypt")
     {
         import crypto.tea;
@@ -427,13 +427,9 @@ class PKCS8 : iPKCS
 
 unittest
 {
-    import std.stdio;
-
     import crypto.rsa;
 
     RSAKeyPair keyPair = RSA.generateKeyPair(1024);
-    writeln(keyPair.privateKey);
-    writeln(keyPair.publicKey);
 
     string data = `
 And the workload proves (POW) reusable workload proof (RPOW) 2. hash function
@@ -448,19 +444,16 @@ For bitcoin, the hash function used by such cryptographic systems, it needs to h
     ubyte[] sb = cast(ubyte[]) data;
     ubyte[] db = RSA.encrypt(keyPair.privateKey, sb);
     sb = RSA.decrypt(keyPair.publicKey, db);
-    writeln(cast(string) sb);
+    assert(cast(string) sb == data);
 }
 
 // for mixinXteaMode
 unittest
 {
-    import std.stdio;
-    import std.bigint;
-
     import crypto.rsa;
 
-    RSAKeyInfo pri_key = RSA.decodeKey("AAAAgIK4Z4ILSqaqdFwMLgZJpaymfvk00u5UgIRMdk3E6hgEVklqgc+U5EzLh9krrww+CXaRpiPGlZJu7hE1hCly/l8DuqpwGhQrdbyz6hOQRPZAN/otgR49KcQfmTgRMUMlAXCIxCen3U0Kvn3Vo70tkfCI/sWJdcotly9Wsjl5GnarRInb77iwqXCWaI8eWojRvRQgrcWqKLGGNaIFKd+AZLklYhU+IagiHaO91MNwXM8z34wSEBqAjUZTwdXnGY0Jc3CEaO5MXviHXZ4EALhZ+vgd+YzhbtGhl8ZEcre261DQje1fi0UmzvfMafNDmM4YV3fZoyeFa+Thc5xfTUlnU98=");
-    RSAKeyInfo pub_key = RSA.decodeKey("AAAAgIK4Z4ILSqaqdFwMLgZJpaymfvk00u5UgIRMdk3E6hgEVklqgc+U5EzLh9krrww+CXaRpiPGlZJu7hE1hCly/l8DuqpwGhQrdbyz6hOQRPZAN/otgR49KcQfmTgRMUMlAXCIxCen3U0Kvn3Vo70tkfCI/sWJdcotly9Wsjl5Gnar758=");
+    RSAKeyInfo pri_key = RSA.decodeKey("AAAAgIcksjBHK7FYePatdsIWiHv7Z+HixIcD0dMyEtXLAGf9fDujn05Seyz1mTIE62UKMojVK+O4oxVT9Ljf8w5F81dTnanoKH0+I/lQN5CR95nRgUEwhZFSbmYM2YeACsfPyX1V5iP0KU8LN9D7/7q64lSZ6XbHGpa7DRv7yvDHaMyJBkGipi2FTk6EOxdIui+E3giDhKeU5ZM9sYNN7+vX9vh7Od+XTm7vGOO91dz4cNMKB9+mioJPunsKh0yG2hBO9Zg+IZNWir/jRfG/w38Av4pQOkRsz9U/ZsTA37XKqzglnwaKGPSw51RJuWuv9RXDRh12Po6oLnr5TkK0OBeJPgE=");
+    RSAKeyInfo pub_key = RSA.decodeKey("AAAAgIcksjBHK7FYePatdsIWiHv7Z+HixIcD0dMyEtXLAGf9fDujn05Seyz1mTIE62UKMojVK+O4oxVT9Ljf8w5F81dTnanoKH0+I/lQN5CR95nRgUEwhZFSbmYM2YeACsfPyX1V5iP0KU8LN9D7/7q64lSZ6XbHGpa7DRv7yvDHaMyJAQAB");
 
     string data = `
 And the workload proves (POW) reusable workload proof (RPOW) 2. hash function
@@ -475,5 +468,5 @@ For bitcoin, the hash function used by such cryptographic systems, it needs to h
     ubyte[] sb = cast(ubyte[]) data;
     ubyte[] db = RSA.encrypt(pri_key, sb, true);
     sb = RSA.decrypt(pub_key, db, true);
-    writeln(cast(string) sb);
+    assert(cast(string) sb == data);
 }
