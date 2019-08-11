@@ -7,7 +7,7 @@ import core.stdc.string: memset, memcpy;
 import inteli.types;
 
 import crypto.blake2.impl;
-import crypto.blake2.round;
+import crypto.blake2.blake2b_round;
 import zero_memory;
 
 
@@ -638,5 +638,5 @@ unittest
         }
     }
 
-    writeln("Unit tests of \"blake2\" have been run successfully.");
+    writeln("Unit tests of \"blake2b\" have been run successfully.");
 }
