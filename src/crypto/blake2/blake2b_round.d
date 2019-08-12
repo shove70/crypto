@@ -1,4 +1,4 @@
-module crypto.blake2.round;
+module crypto.blake2.blake2b_round;
 
 import inteli.emmintrin;
 
