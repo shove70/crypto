@@ -112,51 +112,68 @@ nothrow @nogc
         __m128i b0, b1;
         __m128i t0, t1;
 
-        const ulong  m0 = load64(block.ptr +  0 * ulong.sizeof);
-        const ulong  m1 = load64(block.ptr +  1 * ulong.sizeof);
-        const ulong  m2 = load64(block.ptr +  2 * ulong.sizeof);
-        const ulong  m3 = load64(block.ptr +  3 * ulong.sizeof);
-        const ulong  m4 = load64(block.ptr +  4 * ulong.sizeof);
-        const ulong  m5 = load64(block.ptr +  5 * ulong.sizeof);
-        const ulong  m6 = load64(block.ptr +  6 * ulong.sizeof);
-        const ulong  m7 = load64(block.ptr +  7 * ulong.sizeof);
-        const ulong  m8 = load64(block.ptr +  8 * ulong.sizeof);
-        const ulong  m9 = load64(block.ptr +  9 * ulong.sizeof);
-        const ulong m10 = load64(block.ptr + 10 * ulong.sizeof);
-        const ulong m11 = load64(block.ptr + 11 * ulong.sizeof);
-        const ulong m12 = load64(block.ptr + 12 * ulong.sizeof);
-        const ulong m13 = load64(block.ptr + 13 * ulong.sizeof);
-        const ulong m14 = load64(block.ptr + 14 * ulong.sizeof);
-        const ulong m15 = load64(block.ptr + 15 * ulong.sizeof);
+        const(ulong)[16] m = [
+            load64(block.ptr + 0 * ulong.sizeof),
+            load64(block.ptr + 1 * ulong.sizeof), load64(block.ptr + 2 * ulong.sizeof),
+            load64(block.ptr + 3 * ulong.sizeof), load64(block.ptr + 4 * ulong.sizeof),
+            load64(block.ptr + 5 * ulong.sizeof), load64(block.ptr + 6 * ulong.sizeof),
+            load64(block.ptr + 7 * ulong.sizeof), load64(block.ptr + 8 * ulong.sizeof),
+            load64(block.ptr + 9 * ulong.sizeof), load64(block.ptr + 10 * ulong.sizeof),
+            load64(block.ptr + 11 * ulong.sizeof), load64(block.ptr + 12 * ulong.sizeof),
+            load64(block.ptr + 13 * ulong.sizeof), load64(block.ptr + 14 * ulong.sizeof),
+            load64(block.ptr + 15 * ulong.sizeof)
+        ];
 
-        row1l = LOADU(cast(__m128i*)(&S.h[0]) );
-        row1h = LOADU(cast(__m128i*)(&S.h[2]) );
-        row2l = LOADU(cast(__m128i*)(&S.h[4]) );
-        row2h = LOADU(cast(__m128i*)(&S.h[6]) );
-        row3l = LOADU(cast(__m128i*)(&IV[0]) );
-        row3h = LOADU(cast(__m128i*)(&IV[2]) );
-        row4l = _mm_xor_si128(LOADU(cast(__m128i*)(&IV[4]) ), LOADU(cast(__m128i*)(&S.t[0]) ) );
-        row4h = _mm_xor_si128(LOADU(cast(__m128i*)(&IV[6]) ), LOADU(cast(__m128i*)(&S.f[0]) ) );
-        mixin(tmplRound!0);
-        mixin(tmplRound!1);
-        mixin(tmplRound!2);
-        mixin(tmplRound!3);
-        mixin(tmplRound!4);
-        mixin(tmplRound!5);
-        mixin(tmplRound!6);
-        mixin(tmplRound!7);
-        mixin(tmplRound!8);
-        mixin(tmplRound!9);
-        mixin(tmplRound!10);
-        mixin(tmplRound!11);
-        row1l = _mm_xor_si128(row3l, row1l );
-        row1h = _mm_xor_si128(row3h, row1h );
-        STOREU(cast(__m128i*)(&S.h[0]), _mm_xor_si128(LOADU(cast(__m128i*)(&S.h[0]) ), row1l ) );
-        STOREU(cast(__m128i*)(&S.h[2]), _mm_xor_si128(LOADU(cast(__m128i*)(&S.h[2]) ), row1h ) );
-        row2l = _mm_xor_si128(row4l, row2l );
-        row2h = _mm_xor_si128(row4h, row2h );
-        STOREU(cast(__m128i*)(&S.h[4]), _mm_xor_si128(LOADU(cast(__m128i*)(&S.h[4])), row2l ) );
-        STOREU(cast(__m128i*)(&S.h[6]), _mm_xor_si128(LOADU(cast(__m128i*)(&S.h[6])), row2h ) );
+        row1l = LOADU(cast(__m128i*)(&S.h[0]));
+        row1h = LOADU(cast(__m128i*)(&S.h[2]));
+        row2l = LOADU(cast(__m128i*)(&S.h[4]));
+        row2h = LOADU(cast(__m128i*)(&S.h[6]));
+        row3l = LOADU(cast(__m128i*)(&IV[0]));
+        row3h = LOADU(cast(__m128i*)(&IV[2]));
+        row4l = _mm_xor_si128(LOADU(cast(__m128i*)(&IV[4])), LOADU(cast(__m128i*)(&S.t[0])));
+        row4h = _mm_xor_si128(LOADU(cast(__m128i*)(&IV[6])), LOADU(cast(__m128i*)(&S.f[0])));
+
+        // fix issue #18 https://github.com/shove70/crypto/issues/18
+        version (LDC)
+        {
+            mixin(tmplRound!0);
+            mixin(tmplRound!1);
+            mixin(tmplRound!2);
+            mixin(tmplRound!3);
+            mixin(tmplRound!4);
+            mixin(tmplRound!5);
+            mixin(tmplRound!6);
+            mixin(tmplRound!7);
+            mixin(tmplRound!8);
+            mixin(tmplRound!9);
+            mixin(tmplRound!10);
+            mixin(tmplRound!11);
+        }
+        else
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                loadMsg(m, i, 0, b0, b1);
+                mixin(G1);
+                loadMsg(m, i, 1, b0, b1);
+                mixin(G2);
+                mixin(DIAGONALIZE);
+                loadMsg(m, i, 2, b0, b1);
+                mixin(G1);
+                loadMsg(m, i, 3, b0, b1);
+                mixin(G2);
+                mixin(UNDIAGONALIZE);
+            }
+        }
+
+        row1l = _mm_xor_si128(row3l, row1l);
+        row1h = _mm_xor_si128(row3h, row1h);
+        STOREU(cast(__m128i*)(&S.h[0]), _mm_xor_si128(LOADU(cast(__m128i*)(&S.h[0])), row1l));
+        STOREU(cast(__m128i*)(&S.h[2]), _mm_xor_si128(LOADU(cast(__m128i*)(&S.h[2])), row1h));
+        row2l = _mm_xor_si128(row4l, row2l);
+        row2h = _mm_xor_si128(row4h, row2h);
+        STOREU(cast(__m128i*)(&S.h[4]), _mm_xor_si128(LOADU(cast(__m128i*)(&S.h[4])), row2l));
+        STOREU(cast(__m128i*)(&S.h[6]), _mm_xor_si128(LOADU(cast(__m128i*)(&S.h[6])), row2h));
     }
 
 

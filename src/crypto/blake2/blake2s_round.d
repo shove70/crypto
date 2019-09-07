@@ -19,47 +19,68 @@ __m128i _mm_roti_epi32( in __m128i r, in int c )
     return _mm_xor_si128(_mm_srli_epi32((r), -(c) ),_mm_slli_epi32((r), 32-(-(c)) ));
 }
 
-template tmplG1 (string buf)
+version (LDC)
 {
-    const tmplG1 = `
-        row1 = _mm_add_epi32( _mm_add_epi32( row1, ` ~buf~ `), row2 );
-        row4 = _mm_xor_si128( row4, row1 );
-        row4 = _mm_roti_epi32(row4, -16);
-        row3 = _mm_add_epi32( row3, row4 );
-        row2 = _mm_xor_si128( row2, row3 );
-        row2 = _mm_roti_epi32(row2, -12);
-    `;
+    template tmplG1 (string buf)
+    {
+        const tmplG1 = `
+            row1 = _mm_add_epi32( _mm_add_epi32( row1, ` ~buf~ `), row2 );
+            row4 = _mm_xor_si128( row4, row1 );
+            row4 = _mm_roti_epi32(row4, -16);
+            row3 = _mm_add_epi32( row3, row4 );
+            row2 = _mm_xor_si128( row2, row3 );
+            row2 = _mm_roti_epi32(row2, -12);
+        `;
+    }
+
+    template tmplG2 (string buf)
+    {
+        const tmplG2 = `
+            row1 = _mm_add_epi32( _mm_add_epi32( row1, ` ~buf~ `), row2 );
+            row4 = _mm_xor_si128( row4, row1 );
+            row4 = _mm_roti_epi32(row4, -8);
+            row3 = _mm_add_epi32( row3, row4 );
+            row2 = _mm_xor_si128( row2, row3 );
+            row2 = _mm_roti_epi32(row2, -7);
+        `;
+    }
+}
+else
+{
+    void fG1 (__m128i* row1, __m128i* row2, __m128i* row3, __m128i* row4, in __m128i buf)
+    {
+        *row1 = _mm_add_epi32( _mm_add_epi32( *row1, buf), *row2 );
+        *row4 = _mm_xor_si128( *row4, *row1 );
+        *row4 = _mm_roti_epi32( *row4, -16);
+        *row3 = _mm_add_epi32( *row3, *row4 );
+        *row2 = _mm_xor_si128( *row2, *row3 );
+        *row2 = _mm_roti_epi32( *row2, -12);
+    }
+
+    void fG2 (__m128i* row1, __m128i* row2, __m128i* row3, __m128i* row4, in __m128i buf)
+    {
+        *row1 = _mm_add_epi32(_mm_add_epi32(*row1, buf), *row2 );
+        *row4 = _mm_xor_si128(*row4, *row1 );
+        *row4 = _mm_roti_epi32(*row4, -8 );
+        *row3 = _mm_add_epi32(*row3, *row4 );
+        *row2 = _mm_xor_si128(*row2, *row3 );
+        *row2 = _mm_roti_epi32(*row2, -7 );
+    }
 }
 
-template tmplG2 (string buf)
-{
-    const tmplG2 = `
-        row1 = _mm_add_epi32( _mm_add_epi32( row1, ` ~buf~ `), row2 );
-        row4 = _mm_xor_si128( row4, row1 );
-        row4 = _mm_roti_epi32(row4, -8);
-        row3 = _mm_add_epi32( row3, row4 );
-        row2 = _mm_xor_si128( row2, row3 );
-        row2 = _mm_roti_epi32(row2, -7);
-    `;
-}
-
-const DIAGONALIZE = `
+immutable DIAGONALIZE = `
     row1 = _mm_shuffle_epi32!(_MM_SHUFFLE(2,1,0,3))( row1 );
     row4 = _mm_shuffle_epi32!(_MM_SHUFFLE(1,0,3,2))( row4 );
     row3 = _mm_shuffle_epi32!(_MM_SHUFFLE(0,3,2,1))( row3 );
 `;
 
-const UNDIAGONALIZE = `
+immutable UNDIAGONALIZE = `
     row1 = _mm_shuffle_epi32!(_MM_SHUFFLE(0,3,2,1))( row1 );
     row4 = _mm_shuffle_epi32!(_MM_SHUFFLE(1,0,3,2))( row4 );
     row3 = _mm_shuffle_epi32!(_MM_SHUFFLE(2,1,0,3))( row3 );
 `;
 
-template tmplLoadMsg (int i, int m, string buf)
-{
-    import std.conv: to;
-
-    const matrix = [
+immutable matrix = [
         [
             [6,  4,  2,  0 ],
             [7,  5,  3,  1 ],
@@ -122,20 +143,25 @@ template tmplLoadMsg (int i, int m, string buf)
         ]
     ];
 
-    const im = matrix[i][m];
-    const tmplLoadMsg = "
-        "~buf~" = _mm_set_epi32(
-            m"~to!string(im[0])~",
-            m"~to!string(im[1])~",
-            m"~to!string(im[2])~",
-            m"~to!string(im[3])~"
-        );
-    ";
-}
-
-template tmplRound (int r)
+version(LDC)
 {
-    const tmplRound =
+    template tmplLoadMsg (int r, int c, string buf)
+    {
+        import std.conv: to;
+
+        const cell = matrix[r][c];
+        const tmplLoadMsg = "
+            "~buf~" = _mm_set_epi32(
+                m["~to!string(cell[0])~"],
+                m["~to!string(cell[1])~"],
+                m["~to!string(cell[2])~"],
+                m["~to!string(cell[3])~"]
+            );
+        ";
+    }
+    template tmplRound (int r)
+    {
+        const tmplRound =
         tmplLoadMsg!(r, 0, "buf1") ~
         tmplG1!"buf1" ~
         tmplLoadMsg!(r, 1, "buf2") ~
@@ -146,5 +172,14 @@ template tmplRound (int r)
         tmplLoadMsg!(r, 3, "buf4") ~
         tmplG2!"buf4" ~
         UNDIAGONALIZE
-    ;
+        ;
+    }
+}
+else
+{
+    void loadMsg (ref const(uint)[16] m, in int r, in int c, out __m128i buf)
+    {
+        const cell = matrix[r][c];
+        buf = _mm_set_epi32(m[cell[0]], m[cell[1]], m[cell[2]], m[cell[3]]);
+    }
 }

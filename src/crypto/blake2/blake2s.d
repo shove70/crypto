@@ -106,37 +106,61 @@ nothrow @nogc
         __m128i buf1, buf2, buf3, buf4;
         __m128i ff0, ff1;
 
-        const uint  m0 = load32(block.ptr +  0 * uint.sizeof);
-        const uint  m1 = load32(block.ptr +  1 * uint.sizeof);
-        const uint  m2 = load32(block.ptr +  2 * uint.sizeof);
-        const uint  m3 = load32(block.ptr +  3 * uint.sizeof);
-        const uint  m4 = load32(block.ptr +  4 * uint.sizeof);
-        const uint  m5 = load32(block.ptr +  5 * uint.sizeof);
-        const uint  m6 = load32(block.ptr +  6 * uint.sizeof);
-        const uint  m7 = load32(block.ptr +  7 * uint.sizeof);
-        const uint  m8 = load32(block.ptr +  8 * uint.sizeof);
-        const uint  m9 = load32(block.ptr +  9 * uint.sizeof);
-        const uint m10 = load32(block.ptr + 10 * uint.sizeof);
-        const uint m11 = load32(block.ptr + 11 * uint.sizeof);
-        const uint m12 = load32(block.ptr + 12 * uint.sizeof);
-        const uint m13 = load32(block.ptr + 13 * uint.sizeof);
-        const uint m14 = load32(block.ptr + 14 * uint.sizeof);
-        const uint m15 = load32(block.ptr + 15 * uint.sizeof);
+        const(uint)[16] m = [
+            load32(block.ptr +  0 * uint.sizeof),
+            load32(block.ptr +  1 * uint.sizeof),
+            load32(block.ptr +  2 * uint.sizeof),
+            load32(block.ptr +  3 * uint.sizeof),
+            load32(block.ptr +  4 * uint.sizeof),
+            load32(block.ptr +  5 * uint.sizeof),
+            load32(block.ptr +  6 * uint.sizeof),
+            load32(block.ptr +  7 * uint.sizeof),
+            load32(block.ptr +  8 * uint.sizeof),
+            load32(block.ptr +  9 * uint.sizeof),
+            load32(block.ptr + 10 * uint.sizeof),
+            load32(block.ptr + 11 * uint.sizeof),
+            load32(block.ptr + 12 * uint.sizeof),
+            load32(block.ptr + 13 * uint.sizeof),
+            load32(block.ptr + 14 * uint.sizeof),
+            load32(block.ptr + 15 * uint.sizeof)
+        ];
 
         row1 = ff0 = LOADU(cast(__m128i*)(&S.h[0]) );
         row2 = ff1 = LOADU(cast(__m128i*)(&S.h[4]) );
         row3 = _mm_loadu_si128( cast(const(__m128i)*)&IV[0] );
         row4 = _mm_xor_si128( _mm_loadu_si128( cast(const(__m128i)*)&IV[4] ), LOADU( cast(const(__m128i)*)&S.t[0] ) );
-        mixin(tmplRound!0);
-        mixin(tmplRound!1);
-        mixin(tmplRound!2);
-        mixin(tmplRound!3);
-        mixin(tmplRound!4);
-        mixin(tmplRound!5);
-        mixin(tmplRound!6);
-        mixin(tmplRound!7);
-        mixin(tmplRound!8);
-        mixin(tmplRound!9);
+
+        // fix issue #18 https://github.com/shove70/crypto/issues/18
+        version(LDC)
+        {
+            mixin(tmplRound!0);
+            mixin(tmplRound!1);
+            mixin(tmplRound!2);
+            mixin(tmplRound!3);
+            mixin(tmplRound!4);
+            mixin(tmplRound!5);
+            mixin(tmplRound!6);
+            mixin(tmplRound!7);
+            mixin(tmplRound!8);
+            mixin(tmplRound!9);
+        }
+        else
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                loadMsg(m, i, 0, buf1);
+                fG1(&row1, &row2, &row3, &row4, buf1);
+                loadMsg(m, i, 1, buf2);
+                fG2(&row1, &row2, &row3, &row4, buf2);
+                mixin(DIAGONALIZE);
+                loadMsg(m, i, 2, buf3);
+                fG1(&row1, &row2, &row3, &row4, buf3);
+                loadMsg(m, i, 3, buf4);
+                fG2(&row1, &row2, &row3, &row4, buf4);
+                mixin(UNDIAGONALIZE);
+            }
+        }
+
         STOREU( cast(__m128i*)(&S.h[0]), _mm_xor_si128( ff0, _mm_xor_si128( row1, row3 ) ) );
         STOREU( cast(__m128i*)(&S.h[4]), _mm_xor_si128( ff1, _mm_xor_si128( row2, row4 ) ) );
     }
