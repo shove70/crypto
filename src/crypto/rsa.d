@@ -150,7 +150,7 @@ public:
 
     static RSAKeyInfo decodeKey(T : iPKCS = SimpleFormat)(string key)
     {
-        return T.decodeKey(key);
+        return T.decodeKey(key).get;
     }
 
     static ubyte[] encrypt(T : iPKCS = SimpleFormat)(string key, ubyte[] data, bool mixinXteaMode = false)
