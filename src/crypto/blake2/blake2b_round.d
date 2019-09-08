@@ -19,7 +19,7 @@ __m128i _mm_roti_epi64( in __m128i r, in int c )
     return _mm_xor_si128(_mm_srli_epi64( (r), -(c) ),_mm_slli_epi64( (r), 64-(-(c)) ));
 }
 
-static const G1 = `
+immutable G1 = `
     row1l = _mm_add_epi64(_mm_add_epi64(row1l, b0), row2l);
     row1h = _mm_add_epi64(_mm_add_epi64(row1h, b1), row2h);
 
@@ -39,7 +39,7 @@ static const G1 = `
     row2h = _mm_roti_epi64(row2h, -24);
 `;
 
-const G2 = `
+immutable G2 = `
     row1l = _mm_add_epi64(_mm_add_epi64(row1l, b0), row2l);
     row1h = _mm_add_epi64(_mm_add_epi64(row1h, b1), row2h);
 
@@ -59,7 +59,7 @@ const G2 = `
     row2h = _mm_roti_epi64(row2h, -63);
 `;
 
-const DIAGONALIZE = `
+immutable DIAGONALIZE = `
     t0 = row4l;
     t1 = row2l;
     row4l = row3l;
@@ -71,7 +71,7 @@ const DIAGONALIZE = `
     row2h = _mm_unpackhi_epi64(row2h, _mm_unpacklo_epi64(t1, t1));
 `;
 
-const UNDIAGONALIZE = `
+immutable UNDIAGONALIZE = `
     t0 = row3l;
     row3l = row3h;
     row3h = t0;
@@ -83,11 +83,7 @@ const UNDIAGONALIZE = `
     row4h = _mm_unpackhi_epi64(row4h, _mm_unpacklo_epi64(t1, t1));
 `;
 
-template tmplLoadMsg (int i, int m)
-{
-    import std.conv: to;
-
-    const matrix = [
+immutable matrix = [
         [
             [2,  0,  6,  4 ],
             [3,  1,  7,  5 ],
@@ -162,16 +158,23 @@ template tmplLoadMsg (int i, int m)
         ]
     ];
 
-    const im = matrix[i][m];
-    const tmplLoadMsg = "
-        b0 = _mm_set_epi64x(m"~to!string(im[0])~", m"~to!string(im[1])~");
-        b1 = _mm_set_epi64x(m"~to!string(im[2])~", m"~to!string(im[3])~");
-    ";
-}
 
-template tmplRound (int r)
+version (LDC)
 {
-    const tmplRound =
+    template tmplLoadMsg (int r, int c)
+    {
+        import std.conv: to;
+
+        const cell = matrix[r][c];
+        const tmplLoadMsg = "
+            b0 = _mm_set_epi64x(m["~to!string(cell[0])~"], m["~to!string(cell[1])~"]);
+            b1 = _mm_set_epi64x(m["~to!string(cell[2])~"], m["~to!string(cell[3])~"]);
+        ";
+    }
+
+    template tmplRound (int r)
+    {
+        const tmplRound =
         tmplLoadMsg!(r, 0) ~
         G1 ~
         tmplLoadMsg!(r, 1) ~
@@ -182,5 +185,15 @@ template tmplRound (int r)
         tmplLoadMsg!(r, 3) ~
         G2 ~
         UNDIAGONALIZE
-    ;
+        ;
+    }
+}
+else
+{
+    void loadMsg (ref const(ulong)[16] m, in int r, in int c, out __m128i b0, out __m128i b1)
+    {
+        const cell = matrix[r][c];
+        b0 = _mm_set_epi64x(m[cell[0]], m[cell[1]]);
+        b1 = _mm_set_epi64x(m[cell[2]], m[cell[3]]);
+    }
 }
