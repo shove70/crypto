@@ -102,8 +102,10 @@ nothrow @nogc
     {
         import inteli.emmintrin;
 
-        __m128i row1, row2, row3, row4;
-        __m128i buf1, buf2, buf3, buf4;
+        //__m128i row1, row2, row3, row4;
+        //__m128i buf1, buf2, buf3, buf4;
+        __m128i[4] rows;
+        __m128i[4] bufs;
         __m128i ff0, ff1;
 
         const(uint)[16] m = [
@@ -125,10 +127,10 @@ nothrow @nogc
             load32(block.ptr + 15 * uint.sizeof)
         ];
 
-        row1 = ff0 = LOADU(cast(__m128i*)(&S.h[0]) );
-        row2 = ff1 = LOADU(cast(__m128i*)(&S.h[4]) );
-        row3 = _mm_loadu_si128( cast(const(__m128i)*)&IV[0] );
-        row4 = _mm_xor_si128( _mm_loadu_si128( cast(const(__m128i)*)&IV[4] ), LOADU( cast(const(__m128i)*)&S.t[0] ) );
+        rows[0] = ff0 = LOADU(cast(__m128i*)(&S.h[0]) );
+        rows[1] = ff1 = LOADU(cast(__m128i*)(&S.h[4]) );
+        rows[2] = _mm_loadu_si128( cast(const(__m128i)*)&IV[0] );
+        rows[3] = _mm_xor_si128( _mm_loadu_si128( cast(const(__m128i)*)&IV[4] ), LOADU( cast(const(__m128i)*)&S.t[0] ) );
 
         // fix issue #18 https://github.com/shove70/crypto/issues/18
         version(LDC)
@@ -148,21 +150,12 @@ nothrow @nogc
         {
             for (int i = 0; i < 10; i++)
             {
-                loadMsg(m, i, 0, buf1);
-                fG1(&row1, &row2, &row3, &row4, buf1);
-                loadMsg(m, i, 1, buf2);
-                fG2(&row1, &row2, &row3, &row4, buf2);
-                mixin(DIAGONALIZE);
-                loadMsg(m, i, 2, buf3);
-                fG1(&row1, &row2, &row3, &row4, buf3);
-                loadMsg(m, i, 3, buf4);
-                fG2(&row1, &row2, &row3, &row4, buf4);
-                mixin(UNDIAGONALIZE);
+                round(m, i, rows, bufs);
             }
         }
 
-        STOREU( cast(__m128i*)(&S.h[0]), _mm_xor_si128( ff0, _mm_xor_si128( row1, row3 ) ) );
-        STOREU( cast(__m128i*)(&S.h[4]), _mm_xor_si128( ff1, _mm_xor_si128( row2, row4 ) ) );
+        STOREU( cast(__m128i*)(&S.h[0]), _mm_xor_si128( ff0, _mm_xor_si128( rows[0], rows[2] ) ) );
+        STOREU( cast(__m128i*)(&S.h[4]), _mm_xor_si128( ff1, _mm_xor_si128( rows[1], rows[3] ) ) );
     }
 
 

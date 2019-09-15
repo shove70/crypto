@@ -1,5 +1,6 @@
 module crypto.blake2.blake2s_round;
 
+import std.conv: to;
 import inteli.emmintrin;
 
 
@@ -19,65 +20,66 @@ __m128i _mm_roti_epi32( in __m128i r, in int c )
     return _mm_xor_si128(_mm_srli_epi32((r), -(c) ),_mm_slli_epi32((r), 32-(-(c)) ));
 }
 
-version (LDC)
+version(LDC)
 {
-    template tmplG1 (string buf)
+    template tmplG1 (int buf)
     {
         const tmplG1 = `
-            row1 = _mm_add_epi32( _mm_add_epi32( row1, ` ~buf~ `), row2 );
-            row4 = _mm_xor_si128( row4, row1 );
-            row4 = _mm_roti_epi32(row4, -16);
-            row3 = _mm_add_epi32( row3, row4 );
-            row2 = _mm_xor_si128( row2, row3 );
-            row2 = _mm_roti_epi32(row2, -12);
+            rows[0] = _mm_add_epi32( _mm_add_epi32( rows[0], bufs[` ~to!string(buf)~ `]), rows[1] );
+            rows[3] = _mm_xor_si128( rows[3], rows[0] );
+            rows[3] = _mm_roti_epi32(rows[3], -16);
+            rows[2] = _mm_add_epi32( rows[2], rows[3] );
+            rows[1] = _mm_xor_si128( rows[1], rows[2] );
+            rows[1] = _mm_roti_epi32(rows[1], -12);
         `;
     }
 
-    template tmplG2 (string buf)
+    template tmplG2 (int buf)
     {
         const tmplG2 = `
-            row1 = _mm_add_epi32( _mm_add_epi32( row1, ` ~buf~ `), row2 );
-            row4 = _mm_xor_si128( row4, row1 );
-            row4 = _mm_roti_epi32(row4, -8);
-            row3 = _mm_add_epi32( row3, row4 );
-            row2 = _mm_xor_si128( row2, row3 );
-            row2 = _mm_roti_epi32(row2, -7);
+            rows[0] = _mm_add_epi32( _mm_add_epi32( rows[0], bufs[` ~to!string(buf)~ `]), rows[1] );
+            rows[3] = _mm_xor_si128( rows[3], rows[0] );
+            rows[3] = _mm_roti_epi32(rows[3], -8);
+            rows[2] = _mm_add_epi32( rows[2], rows[3] );
+            rows[1] = _mm_xor_si128( rows[1], rows[2] );
+            rows[1] = _mm_roti_epi32(rows[1], -7);
         `;
     }
 }
 else
 {
-    void fG1 (__m128i* row1, __m128i* row2, __m128i* row3, __m128i* row4, in __m128i buf)
+    void fG1 (ref __m128i[4] rows, in __m128i buf)
     {
-        *row1 = _mm_add_epi32( _mm_add_epi32( *row1, buf), *row2 );
-        *row4 = _mm_xor_si128( *row4, *row1 );
-        *row4 = _mm_roti_epi32( *row4, -16);
-        *row3 = _mm_add_epi32( *row3, *row4 );
-        *row2 = _mm_xor_si128( *row2, *row3 );
-        *row2 = _mm_roti_epi32( *row2, -12);
+        rows[0] = _mm_add_epi32(_mm_add_epi32(rows[0], buf), rows[1] );
+        rows[3] = _mm_xor_si128(rows[3], rows[0] );
+        rows[3] = _mm_roti_epi32(rows[3], -16);
+        rows[2] = _mm_add_epi32(rows[2], rows[3] );
+        rows[1] = _mm_xor_si128(rows[1], rows[2] );
+        rows[1] = _mm_roti_epi32(rows[1], -12);
     }
 
-    void fG2 (__m128i* row1, __m128i* row2, __m128i* row3, __m128i* row4, in __m128i buf)
+    void fG2 (ref __m128i[4] rows, in __m128i buf)
     {
-        *row1 = _mm_add_epi32(_mm_add_epi32(*row1, buf), *row2 );
-        *row4 = _mm_xor_si128(*row4, *row1 );
-        *row4 = _mm_roti_epi32(*row4, -8 );
-        *row3 = _mm_add_epi32(*row3, *row4 );
-        *row2 = _mm_xor_si128(*row2, *row3 );
-        *row2 = _mm_roti_epi32(*row2, -7 );
+        rows[0] = _mm_add_epi32(_mm_add_epi32(rows[0], buf), rows[1] );
+        rows[3] = _mm_xor_si128(rows[3], rows[0] );
+        rows[3] = _mm_roti_epi32(rows[3], -8 );
+        rows[2] = _mm_add_epi32(rows[2], rows[3] );
+        rows[1] = _mm_xor_si128(rows[1], rows[2] );
+        rows[1] = _mm_roti_epi32(rows[1], -7 );
     }
 }
 
+
 immutable DIAGONALIZE = `
-    row1 = _mm_shuffle_epi32!(_MM_SHUFFLE(2,1,0,3))( row1 );
-    row4 = _mm_shuffle_epi32!(_MM_SHUFFLE(1,0,3,2))( row4 );
-    row3 = _mm_shuffle_epi32!(_MM_SHUFFLE(0,3,2,1))( row3 );
+    rows[0] = _mm_shuffle_epi32!(_MM_SHUFFLE(2,1,0,3))( rows[0] );
+    rows[3] = _mm_shuffle_epi32!(_MM_SHUFFLE(1,0,3,2))( rows[3] );
+    rows[2] = _mm_shuffle_epi32!(_MM_SHUFFLE(0,3,2,1))( rows[2] );
 `;
 
 immutable UNDIAGONALIZE = `
-    row1 = _mm_shuffle_epi32!(_MM_SHUFFLE(0,3,2,1))( row1 );
-    row4 = _mm_shuffle_epi32!(_MM_SHUFFLE(1,0,3,2))( row4 );
-    row3 = _mm_shuffle_epi32!(_MM_SHUFFLE(2,1,0,3))( row3 );
+    rows[0] = _mm_shuffle_epi32!(_MM_SHUFFLE(0,3,2,1))( rows[0] );
+    rows[3] = _mm_shuffle_epi32!(_MM_SHUFFLE(1,0,3,2))( rows[3] );
+    rows[2] = _mm_shuffle_epi32!(_MM_SHUFFLE(2,1,0,3))( rows[2] );
 `;
 
 immutable matrix = [
@@ -143,15 +145,14 @@ immutable matrix = [
         ]
     ];
 
+
 version(LDC)
 {
-    template tmplLoadMsg (int r, int c, string buf)
+    template tmplLoadMsg (int r, int c, int buf)
     {
-        import std.conv: to;
-
         const cell = matrix[r][c];
         const tmplLoadMsg = "
-            "~buf~" = _mm_set_epi32(
+            bufs["~to!string(buf)~"] = _mm_set_epi32(
                 m["~to!string(cell[0])~"],
                 m["~to!string(cell[1])~"],
                 m["~to!string(cell[2])~"],
@@ -162,24 +163,39 @@ version(LDC)
     template tmplRound (int r)
     {
         const tmplRound =
-        tmplLoadMsg!(r, 0, "buf1") ~
-        tmplG1!"buf1" ~
-        tmplLoadMsg!(r, 1, "buf2") ~
-        tmplG2!"buf2" ~
+        tmplLoadMsg!(r, 0, 0) ~
+        tmplG1!0 ~
+        tmplLoadMsg!(r, 1, 1) ~
+        tmplG2!1 ~
         DIAGONALIZE ~
-        tmplLoadMsg!(r, 2, "buf3") ~
-        tmplG1!"buf3" ~
-        tmplLoadMsg!(r, 3, "buf4") ~
-        tmplG2!"buf4" ~
+        tmplLoadMsg!(r, 2, 2) ~
+        tmplG1!2 ~
+        tmplLoadMsg!(r, 3, 3) ~
+        tmplG2!3 ~
         UNDIAGONALIZE
         ;
     }
+
 }
 else
 {
-    void loadMsg (ref const(uint)[16] m, in int r, in int c, out __m128i buf)
+    void loadMsg (in const(uint)[16] m, in int r, in int c, out __m128i buf)
     {
         const cell = matrix[r][c];
         buf = _mm_set_epi32(m[cell[0]], m[cell[1]], m[cell[2]], m[cell[3]]);
+    }
+
+    void round (in const(uint)[16] m, in int r, ref __m128i[4] rows, ref __m128i[4] bufs)
+    {
+        loadMsg(m, r, 0, bufs[0]);
+        fG1(rows, bufs[0]);
+        loadMsg(m, r, 1, bufs[1]);
+        fG2(rows, bufs[1]);
+        mixin(DIAGONALIZE);
+        loadMsg(m, r, 2, bufs[2]);
+        fG1(rows, bufs[2]);
+        loadMsg(m, r, 3, bufs[3]);
+        fG2(rows, bufs[3]);
+        mixin(UNDIAGONALIZE);
     }
 }

@@ -13,6 +13,16 @@ alias TOF = _mm_castsi128_ps;
 alias TOI = _mm_castps_si128;
 
 
+struct Row {
+    __m128i l, h;
+
+    this (__m128i l, __m128i h)
+    {
+        this.l = l;
+        this.h = h;
+    }
+}
+
 __m128i _mm_roti_epi64( in __m128i r, in int c )
 @safe
 {
@@ -20,67 +30,67 @@ __m128i _mm_roti_epi64( in __m128i r, in int c )
 }
 
 immutable G1 = `
-    row1l = _mm_add_epi64(_mm_add_epi64(row1l, b0), row2l);
-    row1h = _mm_add_epi64(_mm_add_epi64(row1h, b1), row2h);
+    rows[0].l = _mm_add_epi64(_mm_add_epi64(rows[0].l, b[0]), rows[1].l);
+    rows[0].h = _mm_add_epi64(_mm_add_epi64(rows[0].h, b[1]), rows[1].h);
 
-    row4l = _mm_xor_si128(row4l, row1l);
-    row4h = _mm_xor_si128(row4h, row1h);
+    rows[3].l = _mm_xor_si128(rows[3].l, rows[0].l);
+    rows[3].h = _mm_xor_si128(rows[3].h, rows[0].h);
 
-    row4l = _mm_roti_epi64(row4l, -32);
-    row4h = _mm_roti_epi64(row4h, -32);
+    rows[3].l = _mm_roti_epi64(rows[3].l, -32);
+    rows[3].h = _mm_roti_epi64(rows[3].h, -32);
 
-    row3l = _mm_add_epi64(row3l, row4l);
-    row3h = _mm_add_epi64(row3h, row4h);
+    rows[2].l = _mm_add_epi64(rows[2].l, rows[3].l);
+    rows[2].h = _mm_add_epi64(rows[2].h, rows[3].h);
 
-    row2l = _mm_xor_si128(row2l, row3l);
-    row2h = _mm_xor_si128(row2h, row3h);
+    rows[1].l = _mm_xor_si128(rows[1].l, rows[2].l);
+    rows[1].h = _mm_xor_si128(rows[1].h, rows[2].h);
 
-    row2l = _mm_roti_epi64(row2l, -24);
-    row2h = _mm_roti_epi64(row2h, -24);
+    rows[1].l = _mm_roti_epi64(rows[1].l, -24);
+    rows[1].h = _mm_roti_epi64(rows[1].h, -24);
 `;
 
 immutable G2 = `
-    row1l = _mm_add_epi64(_mm_add_epi64(row1l, b0), row2l);
-    row1h = _mm_add_epi64(_mm_add_epi64(row1h, b1), row2h);
+    rows[0].l = _mm_add_epi64(_mm_add_epi64(rows[0].l, b[0]), rows[1].l);
+    rows[0].h = _mm_add_epi64(_mm_add_epi64(rows[0].h, b[1]), rows[1].h);
 
-    row4l = _mm_xor_si128(row4l, row1l);
-    row4h = _mm_xor_si128(row4h, row1h);
+    rows[3].l = _mm_xor_si128(rows[3].l, rows[0].l);
+    rows[3].h = _mm_xor_si128(rows[3].h, rows[0].h);
 
-    row4l = _mm_roti_epi64(row4l, -16);
-    row4h = _mm_roti_epi64(row4h, -16);
+    rows[3].l = _mm_roti_epi64(rows[3].l, -16);
+    rows[3].h = _mm_roti_epi64(rows[3].h, -16);
 
-    row3l = _mm_add_epi64(row3l, row4l);
-    row3h = _mm_add_epi64(row3h, row4h);
+    rows[2].l = _mm_add_epi64(rows[2].l, rows[3].l);
+    rows[2].h = _mm_add_epi64(rows[2].h, rows[3].h);
 
-    row2l = _mm_xor_si128(row2l, row3l);
-    row2h = _mm_xor_si128(row2h, row3h);
+    rows[1].l = _mm_xor_si128(rows[1].l, rows[2].l);
+    rows[1].h = _mm_xor_si128(rows[1].h, rows[2].h);
 
-    row2l = _mm_roti_epi64(row2l, -63);
-    row2h = _mm_roti_epi64(row2h, -63);
+    rows[1].l = _mm_roti_epi64(rows[1].l, -63);
+    rows[1].h = _mm_roti_epi64(rows[1].h, -63);
 `;
 
 immutable DIAGONALIZE = `
-    t0 = row4l;
-    t1 = row2l;
-    row4l = row3l;
-    row3l = row3h;
-    row3h = row4l;
-    row4l = _mm_unpackhi_epi64(row4h, _mm_unpacklo_epi64(t0, t0));
-    row4h = _mm_unpackhi_epi64(t0, _mm_unpacklo_epi64(row4h, row4h));
-    row2l = _mm_unpackhi_epi64(row2l, _mm_unpacklo_epi64(row2h, row2h));
-    row2h = _mm_unpackhi_epi64(row2h, _mm_unpacklo_epi64(t1, t1));
+    t[0] = rows[3].l;
+    t[1] = rows[1].l;
+    rows[3].l = rows[2].l;
+    rows[2].l = rows[2].h;
+    rows[2].h = rows[3].l;
+    rows[3].l = _mm_unpackhi_epi64(rows[3].h, _mm_unpacklo_epi64(t[0], t[0]));
+    rows[3].h = _mm_unpackhi_epi64(t[0], _mm_unpacklo_epi64(rows[3].h, rows[3].h));
+    rows[1].l = _mm_unpackhi_epi64(rows[1].l, _mm_unpacklo_epi64(rows[1].h, rows[1].h));
+    rows[1].h = _mm_unpackhi_epi64(rows[1].h, _mm_unpacklo_epi64(t[1], t[1]));
 `;
 
 immutable UNDIAGONALIZE = `
-    t0 = row3l;
-    row3l = row3h;
-    row3h = t0;
-    t0 = row2l;
-    t1 = row4l;
-    row2l = _mm_unpackhi_epi64(row2h, _mm_unpacklo_epi64(row2l, row2l));
-    row2h = _mm_unpackhi_epi64(t0, _mm_unpacklo_epi64(row2h, row2h));
-    row4l = _mm_unpackhi_epi64(row4l, _mm_unpacklo_epi64(row4h, row4h));
-    row4h = _mm_unpackhi_epi64(row4h, _mm_unpacklo_epi64(t1, t1));
+    t[0] = rows[2].l;
+    rows[2].l = rows[2].h;
+    rows[2].h = t[0];
+    t[0] = rows[1].l;
+    t[1] = rows[3].l;
+    rows[1].l = _mm_unpackhi_epi64(rows[1].h, _mm_unpacklo_epi64(rows[1].l, rows[1].l));
+    rows[1].h = _mm_unpackhi_epi64(t[0], _mm_unpacklo_epi64(rows[1].h, rows[1].h));
+    rows[3].l = _mm_unpackhi_epi64(rows[3].l, _mm_unpacklo_epi64(rows[3].h, rows[3].h));
+    rows[3].h = _mm_unpackhi_epi64(rows[3].h, _mm_unpacklo_epi64(t[1], t[1]));
 `;
 
 immutable matrix = [
@@ -167,8 +177,8 @@ version (LDC)
 
         const cell = matrix[r][c];
         const tmplLoadMsg = "
-            b0 = _mm_set_epi64x(m["~to!string(cell[0])~"], m["~to!string(cell[1])~"]);
-            b1 = _mm_set_epi64x(m["~to!string(cell[2])~"], m["~to!string(cell[3])~"]);
+            b[0] = _mm_set_epi64x(m["~to!string(cell[0])~"], m["~to!string(cell[1])~"]);
+            b[1] = _mm_set_epi64x(m["~to!string(cell[2])~"], m["~to!string(cell[3])~"]);
         ";
     }
 
@@ -190,10 +200,24 @@ version (LDC)
 }
 else
 {
-    void loadMsg (ref const(ulong)[16] m, in int r, in int c, out __m128i b0, out __m128i b1)
+    void loadMsg (in const(ulong)[16] m, in int r, in int c, out __m128i b0, out __m128i b1)
     {
         const cell = matrix[r][c];
         b0 = _mm_set_epi64x(m[cell[0]], m[cell[1]]);
         b1 = _mm_set_epi64x(m[cell[2]], m[cell[3]]);
+    }
+
+    void round (in const(ulong)[16] m, in int r, ref Row[4] rows, ref __m128i[2] b, ref __m128i[2] t)
+    {
+        loadMsg(m, r, 0, b[0], b[1]);
+        mixin(G1);
+        loadMsg(m, r, 1, b[0], b[1]);
+        mixin(G2);
+        mixin(DIAGONALIZE);
+        loadMsg(m, r, 2, b[0], b[1]);
+        mixin(G1);
+        loadMsg(m, r, 3, b[0], b[1]);
+        mixin(G2);
+        mixin(UNDIAGONALIZE);
     }
 }
