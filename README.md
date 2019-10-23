@@ -70,7 +70,7 @@ ubyte[] en = RSA.encrypt(keyPair.privateKey, cast(ubyte[])data);
 ubyte[] de = RSA.decrypt(keyPair.publicKey, en);
 writeln(cast(string)de);
 
-assert(cast(string)de = data);
+assert(cast(string)de == data);
 ```
 
 ### Thanks
