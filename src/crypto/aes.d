@@ -199,7 +199,7 @@ class AES(uint Nb, uint Nk, uint Nr) if ((Nb == 4 && Nk == 4 && Nr == 10) || (Nb
 
     ~this()
     {
-        import zero_memory : secureZeroMemory;
+        import crypto.utils : secureZeroMemory;
         secureZeroMemory(cast(void[]) w);
         secureZeroMemory(cast(void[]) dw);
         secureZeroMemory(cast(void[]) iv);

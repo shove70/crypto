@@ -8,7 +8,7 @@ import inteli.types;
 
 import crypto.blake2.impl;
 import crypto.blake2.blake2b_round;
-import zero_memory;
+import crypto.utils;
 
 
 static this()

@@ -19,7 +19,7 @@ package class TEA
 
     ~this()
     {
-        import zero_memory : secureZeroMemory;
+        import crypto.utils : secureZeroMemory;
         secureZeroMemory(cast(void[]) m_key);
     }
 
@@ -145,7 +145,7 @@ package class XTEA
 
     ~this()
     {
-        import zero_memory : secureZeroMemory;
+        import crypto.utils : secureZeroMemory;
         secureZeroMemory(cast(void[]) m_key);
     }
 
