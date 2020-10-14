@@ -2,7 +2,7 @@
     "authors": ["Shove"],
     "name": "rsakey",
     "description": "Shove rsakey utility.",
-    "copyright": "Copyright © 2017, Shove",
+    "copyright": "Copyright © 2017-2020, Shove",
     "targetType": "executable",
     "targetName": "rsakey",
     "dependencies": {

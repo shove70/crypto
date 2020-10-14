@@ -3,9 +3,9 @@
         "Shove",
         "DarkRiDDeR"
     ],
-    "copyright": "Copyright © 2018, Shove, DarkRiDDeR",
+    "copyright": "Copyright © 2017-2020, Shove, DarkRiDDeR",
     "dependencies": {
-        "intel-intrinsics": "~>1.2.6"
+        "intel-intrinsics": "*"
     },
     "description": "A D Library of encrypto, decrypto(3DES, AES, TEA, RSA...), encode, hash, and message digital signatures.",
     "importPaths": [
