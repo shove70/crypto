@@ -62,9 +62,28 @@ void secureZeroMemory(void* p, in size_t length) pure nothrow @nogc
             loop iter;
         }
     }
+    else version (LDC)
+    {
+        import ldc.intrinsics : llvm_memset;
+        llvm_memset(p, 0, length, true); // The "true" means volatile.
+    }
     else
     {
-        assert(0, "Only X86 and X86-64 platform supported");
+        static if (__VERSION__ >= 2089)
+            import core.volatile : volatileStore;
+        else
+            import core.bitop : volatileStore;
+        static void zero(void* p, size_t remaining) @nogc nothrow
+        {
+            for (; remaining != 0 && (cast(size_t) p) % size_t.alignof != 0; ++p, --remaining)
+                volatileStore(cast(ubyte*) p, ubyte(0));
+            for (; remaining >= size_t.sizeof; p += size_t.sizeof, remaining -= size_t.sizeof)
+                volatileStore(cast(size_t*) p, size_t(0));
+            for (; remaining != 0; ++p, --remaining)
+                volatileStore(cast(ubyte*) p, ubyte(0));
+        }
+        // Workaround because volatileStore is not annotated "pure".
+        (cast(void function(void*, size_t) @nogc nothrow pure) &zero)(p, length);
     }
 }
 
