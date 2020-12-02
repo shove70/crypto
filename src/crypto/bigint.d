@@ -83,32 +83,37 @@ struct BigIntHelper
     }
 
     /++
-        Because std.bigint's member `data` is a private property,
-        and there is no API `setDigit` that opens the opposite of getDigit,
-        it can only be shifted by digits one by one.
-        !! Here is a performance bottleneck.
+        Create a BigInt from an array representing a magnitude,
+        most significant element first.
+
+        !! Prior to Phobos version 2.094 here is a performance bottleneck.
     +/
     static BigInt fromBytes(in ubyte[] buffer) pure nothrow
     {
-        size_t supplement = (uint.sizeof - buffer.length % uint.sizeof) % uint.sizeof;
-        ubyte[] bytes = (supplement > 0) ? (cast(ubyte)0).repeat(supplement).array ~ buffer : cast(ubyte[])buffer;
-        BigInt data = 0;
-
-        for (size_t i = 0; i < bytes.length / uint.sizeof; i++)
+        static if (__VERSION__ >= 2094)
+            return BigInt(false, buffer);
+        else
         {
-            uint digit;
-            ubyte* p = cast(ubyte*)&digit;
+            size_t supplement = (uint.sizeof - buffer.length % uint.sizeof) % uint.sizeof;
+            ubyte[] bytes = (supplement > 0) ? (cast(ubyte)0).repeat(supplement).array ~ buffer : cast(ubyte[])buffer;
+            BigInt data = 0;
 
-            for (size_t j = 0; j < uint.sizeof; j++)
+            for (size_t i = 0; i < bytes.length / uint.sizeof; i++)
             {
-                *(p + j) = bytes[i * uint.sizeof + uint.sizeof - j - 1];
+                uint digit;
+                ubyte* p = cast(ubyte*)&digit;
+
+                for (size_t j = 0; j < uint.sizeof; j++)
+                {
+                    *(p + j) = bytes[i * uint.sizeof + uint.sizeof - j - 1];
+                }
+
+                data <<= 32;
+                data += digit;
             }
 
-            data <<= 32;
-            data += digit;
+            return data;
         }
-
-        return data;
     }
 
     static if (__VERSION__ >= 2087)
