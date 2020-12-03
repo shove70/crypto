@@ -3,7 +3,7 @@
         "Shove",
         "DarkRiDDeR"
     ],
-    "copyright": "Copyright © 2017-2020, Shove, DarkRiDDeR",
+    "copyright": "Copyright © 2017-2020, Shove, DarkRiDDeR, n8sh",
     "dependencies": {
         "intel-intrinsics": "*"
     },
