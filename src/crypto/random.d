@@ -179,7 +179,7 @@ else version (Posix)
 
         private void fillBufferFromDevUrandom()
         {
-            import core.stdc.errno : errno, EAGAIN, EINTR, EWOULDBLOCK;
+            import core.stdc.errno : errno, EAGAIN, EINTR;//, EWOULDBLOCK;
             import core.sys.posix.fcntl : open, O_RDONLY;
             import core.sys.posix.unistd : close, read;
 
@@ -208,7 +208,7 @@ else version (Posix)
                 else
                 {
                     import std.exception : ErrnoException;
-                    if (errno != EAGAIN && errno != EINTR && errno != EWOULDBLOCK)
+                    if (errno != EAGAIN && errno != EINTR/* && errno != EWOULDBLOCK*/)
                         throw new ErrnoException("Error reading from /dev/urandom");
                 }
             } while (remaining > 0);
