@@ -8,7 +8,8 @@
         "intel-intrinsics": "*"
     },
     "description": "A D Library of encrypto, decrypto(3DES, AES, TEA, RSA...), encode, hash, and message digital signatures.",
-    "importPaths": [
+    "excludedSourceFiles-aarch64": ["src/crypto/blake2/blake2?.d"],
+	"importPaths": [
         "src"
     ],
     "license": "MIT",
