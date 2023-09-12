@@ -16,28 +16,19 @@ private bool isHexLiteral(String)(scope const String hexData)
     import std.ascii : isHexDigit;
     import std.uni : lineSep, paraSep, nelSep;
     size_t i;
-    foreach (const dchar c; hexData)
+    foreach (dchar c; hexData)
     {
         switch (c)
         {
-            case ' ':
-            case '\t':
-            case '\v':
-            case '\f':
-            case '\r':
-            case '\n':
-            case lineSep:
-            case paraSep:
-            case nelSep:
+            case ' ', '\t', '\v', '\f', '\r', '\n',
+                lineSep, paraSep, nelSep:
             continue;
 
             default:
-            break;
         }
-        if (c.isHexDigit)
-            ++i;
-        else
+        if (!c.isHexDigit)
             return false;
+        ++i;
     }
     return !(i & 1);
 }
@@ -46,59 +37,59 @@ private bool isHexLiteral(String)(scope const String hexData)
 @safe unittest
 {
     // test all the hex digits
-    static assert( ("0123456789abcdefABCDEF").isHexLiteral);
+    static assert("0123456789abcdefABCDEF".isHexLiteral);
     // empty or white strings are not valid
-    static assert( "\r\n\t".isHexLiteral);
+    static assert("\r\n\t".isHexLiteral);
     // but are accepted if the count of hex digits is even
-    static assert( "A\r\n\tB".isHexLiteral);
+    static assert("A\r\n\tB".isHexLiteral);
 }
 
 @safe unittest
 {
     import std.ascii;
     // empty/whites
-    static assert( "".isHexLiteral);
-    static assert( " \r".isHexLiteral);
-    static assert( whitespace.isHexLiteral);
-    static assert( ""w.isHexLiteral);
-    static assert( " \r"w.isHexLiteral);
-    static assert( ""d.isHexLiteral);
-    static assert( " \r"d.isHexLiteral);
-    static assert( "\u2028\u2029\u0085"d.isHexLiteral);
+    static assert("".isHexLiteral);
+    static assert(" \r".isHexLiteral);
+    static assert(whitespace.isHexLiteral);
+    static assert(""w.isHexLiteral);
+    static assert(" \r"w.isHexLiteral);
+    static assert(""d.isHexLiteral);
+    static assert(" \r"d.isHexLiteral);
+    static assert("\u2028\u2029\u0085"d.isHexLiteral);
     // odd x strings
-    static assert( !("5" ~ whitespace).isHexLiteral);
-    static assert( !"123".isHexLiteral);
-    static assert( !"1A3".isHexLiteral);
-    static assert( !"1 23".isHexLiteral);
-    static assert( !"\r\n\tC".isHexLiteral);
-    static assert( !"123"w.isHexLiteral);
-    static assert( !"1A3"w.isHexLiteral);
-    static assert( !"1 23"w.isHexLiteral);
-    static assert( !"\r\n\tC"w.isHexLiteral);
-    static assert( !"123"d.isHexLiteral);
-    static assert( !"1A3"d.isHexLiteral);
-    static assert( !"1 23"d.isHexLiteral);
-    static assert( !"\r\n\tC"d.isHexLiteral);
+    static assert(!"5" ~ whitespace.isHexLiteral);
+    static assert(!"123".isHexLiteral);
+    static assert(!"1A3".isHexLiteral);
+    static assert(!"1 23".isHexLiteral);
+    static assert(!"\r\n\tC".isHexLiteral);
+    static assert(!"123"w.isHexLiteral);
+    static assert(!"1A3"w.isHexLiteral);
+    static assert(!"1 23"w.isHexLiteral);
+    static assert(!"\r\n\tC"w.isHexLiteral);
+    static assert(!"123"d.isHexLiteral);
+    static assert(!"1A3"d.isHexLiteral);
+    static assert(!"1 23"d.isHexLiteral);
+    static assert(!"\r\n\tC"d.isHexLiteral);
     // even x strings with invalid charset
-    static assert( !"12gG".isHexLiteral);
-    static assert( !"2A  3q".isHexLiteral);
-    static assert( !"12gG"w.isHexLiteral);
-    static assert( !"2A  3q"w.isHexLiteral);
-    static assert( !"12gG"d.isHexLiteral);
-    static assert( !"2A  3q"d.isHexLiteral);
+    static assert(!"12gG".isHexLiteral);
+    static assert(!"2A  3q".isHexLiteral);
+    static assert(!"12gG"w.isHexLiteral);
+    static assert(!"2A  3q"w.isHexLiteral);
+    static assert(!"12gG"d.isHexLiteral);
+    static assert(!"2A  3q"d.isHexLiteral);
     // valid x strings
-    static assert( ("5A" ~ whitespace).isHexLiteral);
-    static assert( ("5A 01A C FF de 1b").isHexLiteral);
-    static assert( ("0123456789abcdefABCDEF").isHexLiteral);
-    static assert( (" 012 34 5 6789 abcd ef\rAB\nCDEF").isHexLiteral);
-    static assert( ("5A 01A C FF de 1b"w).isHexLiteral);
-    static assert( ("0123456789abcdefABCDEF"w).isHexLiteral);
-    static assert( (" 012 34 5 6789 abcd ef\rAB\nCDEF"w).isHexLiteral);
-    static assert( ("5A 01A C FF de 1b"d).isHexLiteral);
-    static assert( ("0123456789abcdefABCDEF"d).isHexLiteral);
-    static assert( (" 012 34 5 6789 abcd ef\rAB\nCDEF"d).isHexLiteral);
+    static assert("5A" ~ whitespace.isHexLiteral);
+    static assert("5A 01A C FF de 1b".isHexLiteral);
+    static assert("0123456789abcdefABCDEF".isHexLiteral);
+    static assert(" 012 34 5 6789 abcd ef\rAB\nCDEF".isHexLiteral);
+    static assert("5A 01A C FF de 1b"w.isHexLiteral);
+    static assert("0123456789abcdefABCDEF"w.isHexLiteral);
+    static assert(" 012 34 5 6789 abcd ef\rAB\nCDEF"w.isHexLiteral);
+    static assert("5A 01A C FF de 1b"d.isHexLiteral);
+    static assert("0123456789abcdefABCDEF"d.isHexLiteral);
+    static assert(" 012 34 5 6789 abcd ef\rAB\nCDEF"d.isHexLiteral);
     // library version allows what's pointed by issue 10454
-    static assert( ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").isHexLiteral);
+    static assert("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".isHexLiteral);
 }
 
 /**

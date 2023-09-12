@@ -23,10 +23,10 @@ struct Row {
     }
 }
 
-__m128i _mm_roti_epi64( in __m128i r, in int c )
+__m128i _mm_roti_epi64(in __m128i r, int c)
 @safe
 {
-    return _mm_xor_si128(_mm_srli_epi64( (r), -(c) ),_mm_slli_epi64( (r), 64-(-(c)) ));
+    return _mm_xor_si128(_mm_srli_epi64((r), -(c)),_mm_slli_epi64((r), 64-(-(c))));
 }
 
 immutable G1 = `
@@ -200,14 +200,14 @@ version (LDC)
 }
 else
 {
-    void loadMsg (in const(ulong)[16] m, in int r, in int c, out __m128i b0, out __m128i b1)
+    void loadMsg(in const(ulong)[16] m, int r, int c, out __m128i b0, out __m128i b1)
     {
         const cell = matrix[r][c];
         b0 = _mm_set_epi64x(m[cell[0]], m[cell[1]]);
         b1 = _mm_set_epi64x(m[cell[2]], m[cell[3]]);
     }
 
-    void round (in const(ulong)[16] m, in int r, ref Row[4] rows, ref __m128i[2] b, ref __m128i[2] t)
+    void round(in const(ulong)[16] m, int r, ref Row[4] rows, ref __m128i[2] b, ref __m128i[2] t)
     {
         loadMsg(m, r, 0, b[0], b[1]);
         mixin(G1);

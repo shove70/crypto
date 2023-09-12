@@ -32,7 +32,7 @@ SOFTWARE.
 * Use this function instead of ZeroMemory when you want to ensure that your data will be overwritten promptly,
 * as some compilers can optimize a call to ZeroMemory by removing it entirely.
 */
-void secureZeroMemory(void* p, in size_t length) pure nothrow @nogc
+void secureZeroMemory(void* p, size_t length) pure nothrow @nogc
 {
     version (D_InlineAsm_X86_64)
     {
@@ -89,12 +89,8 @@ void secureZeroMemory(void* p, in size_t length) pure nothrow @nogc
 
 void secureZeroMemory(void[] ar) pure nothrow @nogc
 {
-    if (ar.length == 0)
-    {
-        return;
-    }
-
-    secureZeroMemory(ar.ptr, ar.length);
+    if (ar.length)
+        secureZeroMemory(ar.ptr, ar.length);
 }
 
 unittest

@@ -14,12 +14,6 @@ struct RSAKeyPair
 {
     string privateKey;
     string publicKey;
-
-    this(string privateKey, string publicKey)
-    {
-        this.privateKey = privateKey;
-        this.publicKey = publicKey;
-    }
 }
 
 struct RSAKeyInfo
@@ -62,8 +56,6 @@ private:
 
 class RSA
 {
-public:
-
     static RSAKeyPair generateKeyPair(uint bitLength = 2048)
     {
         assert((bitLength >= 128) && (bitLength % 8 == 0),
@@ -189,7 +181,7 @@ private:
         {
             return crypt_mixinXteaMode!T(key, data);
         }
-        
+
         size_t keySize = key.modulus_bytes.length;
 
         BigInt getNextBlock(out size_t blockSize)
@@ -258,7 +250,7 @@ private:
 
         return ret;
     }
-    
+
     static ubyte[] crypt_mixinXteaMode(string T)(RSAKeyInfo key, ubyte[] data)
     if (T == "encrypt" || T == "decrypt")
     {
@@ -279,7 +271,7 @@ private:
             for (int i = 0; i < 4; i++)
             {
                 xteaKey[i] = data.peek!int(i * int.sizeof);
-            } 
+            }
         }
 
         BigInt getNextBlock(out size_t blockSize)

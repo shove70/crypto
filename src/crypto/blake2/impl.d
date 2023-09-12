@@ -7,7 +7,7 @@ package:
 pure nothrow @nogc:
 
 
-ushort load16( const void *src )
+ushort load16(const void *src)
 {
     version (LittleEndian)
     {
@@ -18,12 +18,12 @@ ushort load16( const void *src )
     else // BigEndian
     {
         auto p = cast(const(ubyte)*)src;
-        return cast(ushort)(( cast(uint) ( p[0] ) <<  0) |
-                           ( cast(uint) ( p[1] ) <<  8)) ;
+        return cast(ushort)((cast(uint) (p[0]) <<  0) |
+                           (cast(uint) (p[1]) <<  8)) ;
     }
 }
 
-uint load32( const void *src )
+uint load32(const void *src)
 {
     version (LittleEndian)
     {
@@ -35,14 +35,14 @@ uint load32( const void *src )
     {
         auto p = cast(const(ubyte)*)src;
         return
-        ( cast(uint) ( p[0] ) <<  0) |
-        ( cast(uint) ( p[1] ) <<  8) |
-        ( cast(uint) ( p[2] ) << 16) |
-        ( cast(uint) ( p[3] ) << 24) ;
+        (cast(uint) p[0] <<  0) |
+        (cast(uint) p[1] <<  8) |
+        (cast(uint) p[2] << 16) |
+        (cast(uint) p[3] << 24) ;
     }
 }
 
-ulong load64( const void *src )
+ulong load64(const void *src)
 {
     version (LittleEndian)
     {
@@ -54,31 +54,31 @@ ulong load64( const void *src )
     {
         auto p = cast(const(ubyte)*)src;
         return
-            ( cast(ulong) ( p[0] ) <<  0) |
-            ( cast(ulong) ( p[1] ) <<  8) |
-            ( cast(ulong) ( p[2] ) << 16) |
-            ( cast(ulong) ( p[3] ) << 24) |
-            ( cast(ulong) ( p[4] ) << 32) |
-            ( cast(ulong) ( p[5] ) << 40) |
-            ( cast(ulong) ( p[6] ) << 48) |
-            ( cast(ulong) ( p[7] ) << 56) ;
+            (cast(ulong) p[0] <<  0) |
+            (cast(ulong) p[1] <<  8) |
+            (cast(ulong) p[2] << 16) |
+            (cast(ulong) p[3] << 24) |
+            (cast(ulong) p[4] << 32) |
+            (cast(ulong) p[5] << 40) |
+            (cast(ulong) p[6] << 48) |
+            (cast(ulong) p[7] << 56) ;
     }
 }
 
-ulong load48( const void *src )
+ulong load48(const void *src)
 {
     auto p = cast(const(ubyte)*)src;
     return
-    ( cast(ulong) ( p[0] ) <<  0) |
-    ( cast(ulong) ( p[1] ) <<  8) |
-    ( cast(ulong) ( p[2] ) << 16) |
-    ( cast(ulong) ( p[3] ) << 24) |
-    ( cast(ulong) ( p[4] ) << 32) |
-    ( cast(ulong) ( p[5] ) << 40) ;
+    (cast(ulong) p[0] <<  0) |
+    (cast(ulong) p[1] <<  8) |
+    (cast(ulong) p[2] << 16) |
+    (cast(ulong) p[3] << 24) |
+    (cast(ulong) p[4] << 32) |
+    (cast(ulong) p[5] << 40) ;
 }
 
 
-void store16( void *dst, in ushort w )
+void store16(void *dst, in ushort w)
 {
     version (LittleEndian)
     {
@@ -93,7 +93,7 @@ void store16( void *dst, in ushort w )
     }
 }
 
-void store32( void *dst, in uint w )
+void store32(void *dst, uint w)
 {
     version (LittleEndian)
     {
@@ -109,7 +109,7 @@ void store32( void *dst, in uint w )
     }
 }
 
-void store48( void *dst, in ulong w )
+void store48(void *dst, ulong w)
 {
     auto p = cast(ubyte*)dst;
     p[0] = cast(ubyte)(w >>  0);
@@ -120,7 +120,7 @@ void store48( void *dst, in ulong w )
     p[5] = cast(ubyte)(w >> 40);
 }
 
-void store64( void *dst, in ulong w )
+void store64(void *dst, ulong w)
 {
     version (LittleEndian)
     {
@@ -140,12 +140,12 @@ void store64( void *dst, in ulong w )
     }
 }
 
-uint rotr32( in uint w, in uint c )
+uint rotr32(uint w, uint c)
 {
-    return ( w >> c ) | ( w << ( 32 - c ) );
+    return (w >> c) | (w << (32 - c));
 }
 
-ulong rotr64( in ulong w, in uint c )
+ulong rotr64(ulong w, uint c)
 {
-    return ( w >> c ) | ( w << ( 64 - c ) );
+    return (w >> c) | (w << (64 - c));
 }
