@@ -18,25 +18,13 @@ struct RSAKeyPair
 
 struct RSAKeyInfo
 {
-    @property BigInt modulus()
-    {
-        return _modulus;
-    }
+    @property BigInt modulus() => _modulus;
 
-    @property ubyte[] modulus_bytes()
-    {
-        return _modulus_bytes;
-    }
+    @property ubyte[] modulus_bytes() => _modulus_bytes;
 
-    @property BigInt exponent()
-    {
-        return _exponent;
-    }
+    @property BigInt exponent() => _exponent;
 
-    @property ubyte[] exponent_bytes()
-    {
-        return _exponent_bytes;
-    }
+    @property ubyte[] exponent_bytes() => _exponent_bytes;
 
     this(BigInt modulus, ubyte[] modulus_bytes, BigInt exponent, ubyte[] exponent_bytes)
     {
@@ -58,7 +46,7 @@ class RSA
 {
     static RSAKeyPair generateKeyPair(uint bitLength = 2048)
     {
-        assert((bitLength >= 128) && (bitLength % 8 == 0),
+        assert(bitLength >= 128 && bitLength % 8 == 0,
             "Bitlength is required to be a multiple of 8 and not less than 128. It’s recommended that it be no less than 2048.");
 
         BigInt x, y;
@@ -408,7 +396,7 @@ class PKCS8 : iPKCS
 {
     static string encodeKey(BigInt modulus, BigInt exponent)
     {
-        return string.init;
+        return null;
     }
 
     static Nullable!RSAKeyInfo decodeKey(string key)

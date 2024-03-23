@@ -1,7 +1,7 @@
 module crypto.blake2.impl;
 
 import core.stdc.string: memcpy;
-
+import std.bitmanip;
 
 package:
 pure nothrow @nogc:
@@ -18,8 +18,8 @@ ushort load16(const void *src)
     else // BigEndian
     {
         auto p = cast(const(ubyte)*)src;
-        return cast(ushort)((cast(uint) (p[0]) <<  0) |
-                           (cast(uint) (p[1]) <<  8)) ;
+        return cast(ushort)((uint(p[0]) <<  0) |
+                           (uint(p[1]) <<  8)) ;
     }
 }
 
@@ -35,10 +35,10 @@ uint load32(const void *src)
     {
         auto p = cast(const(ubyte)*)src;
         return
-        (cast(uint) p[0] <<  0) |
-        (cast(uint) p[1] <<  8) |
-        (cast(uint) p[2] << 16) |
-        (cast(uint) p[3] << 24) ;
+        (uint(p[0]) <<  0) |
+        (uint(p[1]) <<  8) |
+        (uint(p[2]) << 16) |
+        (uint(p[3]) << 24) ;
     }
 }
 
@@ -54,14 +54,14 @@ ulong load64(const void *src)
     {
         auto p = cast(const(ubyte)*)src;
         return
-            (cast(ulong) p[0] <<  0) |
-            (cast(ulong) p[1] <<  8) |
-            (cast(ulong) p[2] << 16) |
-            (cast(ulong) p[3] << 24) |
-            (cast(ulong) p[4] << 32) |
-            (cast(ulong) p[5] << 40) |
-            (cast(ulong) p[6] << 48) |
-            (cast(ulong) p[7] << 56) ;
+            (ulong(p[0]) <<  0) |
+            (ulong(p[1]) <<  8) |
+            (ulong(p[2]) << 16) |
+            (ulong(p[3]) << 24) |
+            (ulong(p[4]) << 32) |
+            (ulong(p[5]) << 40) |
+            (ulong(p[6]) << 48) |
+            (ulong(p[7]) << 56) ;
     }
 }
 
@@ -69,12 +69,12 @@ ulong load48(const void *src)
 {
     auto p = cast(const(ubyte)*)src;
     return
-    (cast(ulong) p[0] <<  0) |
-    (cast(ulong) p[1] <<  8) |
-    (cast(ulong) p[2] << 16) |
-    (cast(ulong) p[3] << 24) |
-    (cast(ulong) p[4] << 32) |
-    (cast(ulong) p[5] << 40) ;
+    (ulong(p[0]) <<  0) |
+    (ulong(p[1]) <<  8) |
+    (ulong(p[2]) << 16) |
+    (ulong(p[3]) << 24) |
+    (ulong(p[4]) << 32) |
+    (ulong(p[5]) << 40) ;
 }
 
 
@@ -142,10 +142,10 @@ void store64(void *dst, ulong w)
 
 uint rotr32(uint w, uint c)
 {
-    return (w >> c) | (w << (32 - c));
+    return (w >> c) | (w << 32 - c);
 }
 
 ulong rotr64(ulong w, uint c)
 {
-    return (w >> c) | (w << (64 - c));
+    return (w >> c) | (w << 64 - c);
 }

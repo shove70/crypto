@@ -5,23 +5,21 @@ import std.conv;
 
 enum ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
+private auto initIndex()
+{
+    int[128] a = -1;
+
+    foreach (i, c; ALPHABET)
+    {
+        a[c] = cast(int)i;
+    }
+    return a;
+}
+
+immutable int[128] INDEXES = initIndex();
+
 class Base58
 {
-    private static int[128] INDEXES;
-
-    static this()
-    {
-        for (int i; i < INDEXES.length; i++)
-        {
-            INDEXES[i] = -1;
-        }
-
-        for (int i; i < ALPHABET.length; i++)
-        {
-            INDEXES[ALPHABET[i]] = i;
-        }
-    }
-
     /// Encodes the given bytes as a base58 string (no checksum is appended).
     static string encode(in byte[] inp)
     {

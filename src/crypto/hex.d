@@ -57,7 +57,7 @@ private bool isHexLiteral(String)(scope const String hexData)
     static assert(" \r"d.isHexLiteral);
     static assert("\u2028\u2029\u0085"d.isHexLiteral);
     // odd x strings
-    static assert(!"5" ~ whitespace.isHexLiteral);
+    static assert(!("5" ~ whitespace).isHexLiteral);
     static assert(!"123".isHexLiteral);
     static assert(!"1A3".isHexLiteral);
     static assert(!"1 23".isHexLiteral);
@@ -117,7 +117,7 @@ if (hexData.isHexLiteral && isIntegral!T && (T.sizeof <= 4))
 /// ditto
 @property @trusted pure
 auto hexBytes(T = ubyte)(string hexData)
-if (isIntegral!T && (T.sizeof <= 4))
+if (isIntegral!T && T.sizeof <= 4)
 {
     if (hexData.isHexLiteral)
     {

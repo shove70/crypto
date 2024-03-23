@@ -6,3 +6,4 @@
 *.exe
 /crypto
 /crypto-test-library
+*.pdb

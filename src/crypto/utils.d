@@ -117,7 +117,7 @@ unittest
 
     // or use a cast to type void[]
     i2 = [8, 5, 99, 5, 99];
-    secureZeroMemory(cast(void[])i2);
+    secureZeroMemory(i2);
     assert(i == i2);
 }
 

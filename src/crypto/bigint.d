@@ -10,6 +10,8 @@ import std.math : abs;
 
 import crypto.random;
 
+static assert(__VERSION__ >= 2094, "Unsupported compiler version");
+
 struct BigIntHelper
 {
     /// Random generate a BigInt by bitLength.
@@ -17,7 +19,7 @@ struct BigIntHelper
     {
         enforce((bitLength > 0) && (bitLength % 8 == 0));
 
-        ubyte[] buffer = new ubyte[bitLength / 8];
+        auto buffer = new ubyte[bitLength / 8];
 
         uint pos = 0;
         uint current = 0;
@@ -126,14 +128,10 @@ struct BigIntHelper
             assert(base >= 1 && exponent >= 0 && modulus >= 1);
 
             if (exponent == 0)
-            {
                 return BigInt(1) % modulus;
-            }
 
             if (exponent == 1)
-            {
                 return base % modulus;
-            }
 
             BigInt temp = powmod(base, exponent / 2, modulus);
 
@@ -154,101 +152,22 @@ struct BigIntHelper
         When n < 10_000_000_000_000_000,
         there is no need to lucasLehmerTest, And trust the result of millerRabinPrimeTest.
         */
-        if (!passed || (n < 10_000_000_000_000_000))
-        {
+        if (!passed || n < 10_000_000_000_000_000)
             return passed;
-        }
 
         return lucasLehmerTest(n);
     }
 
 private:
 
-    /++
-    Bug BigInt mul() of phobos will be fixed in version 2.087.0
-        Details: https://github.com/dlang/phobos/pull/6972
-    +/
-    static if (__VERSION__ < 2087)
-    {
-        static BigInt mul(const BigInt a, const BigInt b) pure nothrow
-        {
-            uint[] au = toUintArray(a);
-            uint[] bu = toUintArray(b);
-
-            uint[] r = new uint[au.length + bu.length];
-
-            for (size_t i = 0; i < bu.length; i++)
-            {
-                for (size_t j = 0; j < au.length; j++)
-                {
-                    ulong t = cast(ulong)bu[i] * au[j] + r[i + j];
-                    r[i + j] = t & 0xFFFF_FFFF;
-                    uint c = t >> 32;
-                    size_t h = i + j + 1;
-
-                    while (c != 0)
-                    {
-                        t = cast(ulong)c + r[h];
-                        r[h] = t & 0xFFFF_FFFF;
-                        c = t >> 32;
-                        h++;
-                    }
-                }
-            }
-
-            return fromUintArray(r);
-        }
-
-        static uint[] toUintArray(const BigInt data) pure nothrow
-        {
-            size_t n = data.uintLength();
-            uint[] arr = new uint[n];
-
-            for (size_t i = 0; i < n; i++)
-            {
-                arr[i] = data.getDigit!uint(i);
-            }
-
-            return arr;
-        }
-
-        static BigInt fromUintArray(const uint[] arr) pure nothrow
-        {
-            size_t zeros = 0;
-            foreach_reverse (d; arr)
-            {
-                if (d != 0)
-                {
-                    break;
-                }
-
-                zeros++;
-            }
-
-            BigInt data = 0;
-
-            foreach_reverse (d; arr[0..$ - zeros])
-            {
-                data <<= 32;
-                data += d;
-            }
-
-            return data;
-        }
-    }
-
     ///
     static bool millerRabinPrimeTest(const BigInt n, const size_t confidence)
     {
         enforce(confidence > 0, "confidence must be a positive integer greater than 0.");
 
-        if (n < 2)
+        if (n < 3)
         {
-            return false;
-        }
-        if (n == 2)
-        {
-            return true;
+            return n == 2;
         }
 
         BigInt[] bases;
@@ -279,14 +198,12 @@ private:
         }
         else if (n < 10_000_000_000_000_000)
         {
-            bases = [BigInt(2), BigInt(3), BigInt(7), BigInt(61), BigInt(24251)];
+            bases = [BigInt(2), BigInt(3), BigInt(7), BigInt(61), BigInt(24_251)];
         }
         else
         {
             if (!smallPrimesTable.all!((prime) => (powmod(prime, n - 1, n) == 1)))
-            {
                 return false;
-            }
 
             /**
             Although in theory base should be between 2 and n - 1, because confidence is optimized before call,
@@ -299,7 +216,7 @@ private:
             //bases.each!((ref b) => (b = randomGenerate(BigInt(2), n - 1)));
         }
 
-        return (bases.all!((base) => (powmod(base, n - 1, n) == 1)));
+        return bases.all!((base) => (powmod(base, n - 1, n) == 1));
     }
 
     /**
@@ -315,7 +232,7 @@ private:
         while (jacobiSymbol(d, n) != -1)
         {
             // 5, -7, 9, -11, ...
-            d = (d < 0) ? abs(d) + 2 : -(d + 2);
+            d = d < 0 ? abs(d) + 2 : -(d + 2);
         }
 
         return lucasLehmerSequence(d, nPlusOne, n) % n == 0;
@@ -334,7 +251,7 @@ private:
         {
             p = -p;
             immutable n8 = u & 7;
-            if ((n8 == 3) || (n8 == 7))
+            if (n8 == 3 || n8 == 7)
                 j = -j; // 3 (011) or 7 (111) mod 8
         }
 
@@ -383,9 +300,9 @@ private:
         return 0;
     }
 
-    static BigInt lucasLehmerSequence(const int z, const BigInt k, const BigInt n)
+    static BigInt lucasLehmerSequence(int z, const BigInt k, const BigInt n)
     {
-        bool testBit(const BigInt n, const int m)
+        bool testBit(const BigInt n, int m)
         {
             int digit = cast(int) (n.getDigit!uint(m >>> 5));
             return (digit & (1 << (m & 31))) != 0;
