@@ -89,15 +89,15 @@ nothrow @nogc
 
     private void setLastblock(State *S)
     {
-        if ( S.lastNode ) setLastnode(S );
+        if (S.lastNode) setLastnode(S);
 
         S.f[0] = ulong.max;
     }
 
-    private void incrementCounter(State *S, in ulong inc)
+    private void incrementCounter(State *S, ulong inc)
     {
         S.t[0] += inc;
-        S.t[1] += ( S.t[0] < inc );
+        S.t[1] += (S.t[0] < inc);
     }
 
 
@@ -167,72 +167,72 @@ nothrow @nogc
     int blake2bInitParam(State *S, const Param *P)
     {
         size_t i;
-        /*blake2b_init0( S ); */
-        auto v = cast( const(ubyte)* )( IV );
-        auto p = cast( const(ubyte)* )( P );
-        auto h = cast( ubyte* )( S.h );
+        /*blake2b_init0(S); */
+        auto v = cast(const(ubyte)*)(IV);
+        auto p = cast(const(ubyte)*)(P);
+        auto h = cast(ubyte*)(S.h);
         /* IV XOR ParamBlock */
-        memset (S, 0, state.sizeof );
+        memset (S, 0, state.sizeof);
 
-        for ( i = 0; i < CONSTANT.OUTBYTES; ++i ) h[i] = v[i] ^ p[i];
+        for (i = 0; i < CONSTANT.OUTBYTES; ++i) h[i] = v[i] ^ p[i];
 
         S.outlen = P.digestLength;
         return 0;
     }
 
     /* Some sort of default parameter block initialization, for sequential blake2b */
-    int blake2bInit(State *S, in size_t outlen)
+    int blake2bInit(State *S, size_t outlen)
     {
         Param P;
 
-        assert( !(!outlen || outlen > CONSTANT.OUTBYTES), "Invalid outlen length" );
-        if ( !outlen || outlen > CONSTANT.OUTBYTES ) return -1;
+        assert(!(!outlen || outlen > CONSTANT.OUTBYTES), "Invalid outlen length");
+        if (!outlen || outlen > CONSTANT.OUTBYTES) return -1;
 
         P.digestLength = cast(ubyte)outlen;
         P.keyLength    = 0;
         P.fanout       = 1;
         P.depth        = 1;
-        store32(&P.leafLength, 0 );
-        store32(&P.nodeOffset, 0 );
-        store32(&P.xofLength, 0 );
+        store32(&P.leafLength, 0);
+        store32(&P.nodeOffset, 0);
+        store32(&P.xofLength, 0);
         P.nodeDepth    = 0;
         P.innerLength  = 0;
-        memset(P.reserved.ptr, 0, P.reserved.sizeof );
-        memset(P.salt.ptr,     0, P.salt.sizeof );
-        memset(P.personal.ptr, 0, P.personal.sizeof );
+        memset(P.reserved.ptr, 0, P.reserved.sizeof);
+        memset(P.salt.ptr,     0, P.salt.sizeof);
+        memset(P.personal.ptr, 0, P.personal.sizeof);
 
-        return blake2bInitParam(S, &P );
+        return blake2bInitParam(S, &P);
     }
 
-    int blake2bInitKey(State *S, in size_t outlen, const(void) *key, in size_t keylen)
+    int blake2bInitKey(State *S, size_t outlen, const(void) *key, size_t keylen)
     {
         Param P;
 
-        assert( !(!outlen || outlen > CONSTANT.OUTBYTES), "Invalid outlen length" );
-        if ( !outlen || outlen > CONSTANT.OUTBYTES ) return -1;
-        assert( !(!keylen || keylen > CONSTANT.KEYBYTES), "Invalid keylen length" );
-        if ( !keylen || keylen > CONSTANT.KEYBYTES ) return -1;
+        assert(!(!outlen || outlen > CONSTANT.OUTBYTES), "Invalid outlen length");
+        if (!outlen || outlen > CONSTANT.OUTBYTES) return -1;
+        assert(!(!keylen || keylen > CONSTANT.KEYBYTES), "Invalid keylen length");
+        if (!keylen || keylen > CONSTANT.KEYBYTES) return -1;
 
         P.digestLength = cast(ubyte)outlen;
         P.keyLength    = cast(ubyte)keylen;
         P.fanout       = 1;
         P.depth        = 1;
-        store32(&P.leafLength, 0 );
-        store32(&P.nodeOffset, 0 );
-        store32(&P.xofLength, 0 );
+        store32(&P.leafLength, 0);
+        store32(&P.nodeOffset, 0);
+        store32(&P.xofLength, 0);
         P.nodeDepth    = 0;
         P.innerLength  = 0;
-        memset(P.reserved.ptr, 0, P.reserved.sizeof );
-        memset(P.salt.ptr,     0, P.salt.sizeof );
-        memset(P.personal.ptr, 0, P.personal.sizeof );
+        memset(P.reserved.ptr, 0, P.reserved.sizeof);
+        memset(P.salt.ptr,     0, P.salt.sizeof);
+        memset(P.personal.ptr, 0, P.personal.sizeof);
 
-        if ( blake2bInitParam(S, &P ) < 0 ) return 0;
+        if (blake2bInitParam(S, &P) < 0) return 0;
 
         ubyte[CONSTANT.BLOCKBYTES] block;
-        memset(block.ptr, 0, CONSTANT.BLOCKBYTES );
-        memcpy(block.ptr, key, keylen );
-        blake2bUpdate(S, block.ptr, CONSTANT.BLOCKBYTES );
-        secureZeroMemory(block.ptr, CONSTANT.BLOCKBYTES ); /* Burn the key from stack */
+        memset(block.ptr, 0, CONSTANT.BLOCKBYTES);
+        memcpy(block.ptr, key, keylen);
+        blake2bUpdate(S, block.ptr, CONSTANT.BLOCKBYTES);
+        secureZeroMemory(block.ptr, CONSTANT.BLOCKBYTES); /* Burn the key from stack */
 
         return 0;
     }
@@ -240,94 +240,94 @@ nothrow @nogc
     int blake2bUpdate(State *S, const(void) *pin, size_t inlen)
     {
         auto bpin = cast(const(ubyte)*)pin;
-        if ( inlen > 0 )
+        if (inlen > 0)
         {
             size_t left = S.buflen;
             size_t fill = CONSTANT.BLOCKBYTES - left;
-            if ( inlen > fill )
+            if (inlen > fill)
             {
                 S.buflen = 0;
-                memcpy(S.buf.ptr + left, bpin, fill ); /* Fill buffer */
-                incrementCounter(S, CONSTANT.BLOCKBYTES );
-                compress(S, S.buf ); /* Compress */
+                memcpy(S.buf.ptr + left, bpin, fill); /* Fill buffer */
+                incrementCounter(S, CONSTANT.BLOCKBYTES);
+                compress(S, S.buf); /* Compress */
                 bpin += fill;
                 inlen -= fill;
                 while(inlen > CONSTANT.BLOCKBYTES)
                 {
                     incrementCounter(S, CONSTANT.BLOCKBYTES);
-                    compress(S, bpin[0..CONSTANT.BLOCKBYTES] );
+                    compress(S, bpin[0..CONSTANT.BLOCKBYTES]);
                     bpin += CONSTANT.BLOCKBYTES;
                     inlen -= CONSTANT.BLOCKBYTES;
                 }
             }
-            memcpy(S.buf.ptr + S.buflen, bpin, inlen );
+            memcpy(S.buf.ptr + S.buflen, bpin, inlen);
             S.buflen += inlen;
         }
         return 0;
     }
 
-    int blake2bFinal(State *S, void *pout, in size_t outlen)
+    int blake2bFinal(State *S, void *pout, size_t outlen)
     {
-        assert( !(pout == null || outlen < S.outlen), "Invalid pout or outlen length" );
-        if ( pout == null || outlen < S.outlen ) return -1;
+        assert(!(pout == null || outlen < S.outlen), "Invalid pout or outlen length");
+        if (pout == null || outlen < S.outlen) return -1;
 
-        assert( !isLastblock(S), "Invalid block. It is the last" );
-        if ( isLastblock(S) ) return -1;
+        assert(!isLastblock(S), "Invalid block. It is the last");
+        if (isLastblock(S)) return -1;
 
-        incrementCounter(S, S.buflen );
-        setLastblock(S );
-        memset(S.buf.ptr + S.buflen, 0, CONSTANT.BLOCKBYTES - S.buflen ); /* Padding */
-        compress(S, S.buf );
+        incrementCounter(S, S.buflen);
+        setLastblock(S);
+        memset(S.buf.ptr + S.buflen, 0, CONSTANT.BLOCKBYTES - S.buflen); /* Padding */
+        compress(S, S.buf);
 
-        memcpy(pout, &S.h[0], S.outlen );
+        memcpy(pout, &S.h[0], S.outlen);
         return 0;
     }
 
 
-    int blake2b(void *pout, in size_t outlen, const(void) *pin, size_t inlen, const(void) *key, in size_t keylen)
+    int blake2b(void *pout, size_t outlen, const(void) *pin, size_t inlen, const(void) *key, size_t keylen)
     {
         State S;
 
         /* Verify parameters */
-        assert( !(null == pin && inlen > 0), "Invalid input" );
-        if ( null == pin && inlen > 0 ) return -1;
+        assert(!(null == pin && inlen > 0), "Invalid input");
+        if (null == pin && inlen > 0) return -1;
 
-        assert( !(null == pout), "Invalid output" );
-        if ( null == pout ) return -1;
+        assert(!(null == pout), "Invalid output");
+        if (null == pout) return -1;
 
-        assert( !(null == key && keylen > 0), "Invalid key" );
-        if ( null == key && keylen > 0 ) return -1;
+        assert(!(null == key && keylen > 0), "Invalid key");
+        if (null == key && keylen > 0) return -1;
 
-        assert( !(!outlen || outlen > CONSTANT.OUTBYTES), "Invalid output length" );
-        if( !outlen || outlen > CONSTANT.OUTBYTES ) return -1;
+        assert(!(!outlen || outlen > CONSTANT.OUTBYTES), "Invalid output length");
+        if(!outlen || outlen > CONSTANT.OUTBYTES) return -1;
 
-        assert( !(keylen > CONSTANT.KEYBYTES), "Invalid key length" );
-        if( keylen > CONSTANT.KEYBYTES ) return -1;
+        assert(!(keylen > CONSTANT.KEYBYTES), "Invalid key length");
+        if(keylen > CONSTANT.KEYBYTES) return -1;
 
-        if ( keylen )
+        if (keylen)
         {
-            if ( blake2bInitKey(&S, outlen, key, keylen ) < 0 ) return -1;
+            if (blake2bInitKey(&S, outlen, key, keylen) < 0) return -1;
         }
         else
         {
-            if ( blake2bInit(&S, outlen ) < 0 ) return -1;
+            if (blake2bInit(&S, outlen) < 0) return -1;
         }
 
-        blake2bUpdate( &S, pin, inlen );
-        blake2bFinal( &S, pout, outlen );
+        blake2bUpdate(&S, pin, inlen);
+        blake2bFinal(&S, pout, outlen);
         return 0;
     }
 
-    int blake2b (ubyte* hash, in int size, in ubyte[] input, in ubyte[] key = null)
+    int blake2b (ubyte* hash, int size, in ubyte[] input, in ubyte[] key = null)
     {
-        return blake2b( hash, size, input.ptr, input.length, key.ptr, key.length );
+        return blake2b(hash, size, input.ptr, input.length, key.ptr, key.length);
     }
 }
 
 int blake2b (int size = B512)(out ubyte[] hash, in ubyte[] input, in ubyte[] key = null)
 {
     hash = new ubyte[size];
-    return blake2b( hash.ptr, size, input.ptr, input.length, key.ptr, key.length );
+    return blake2b(hash.ptr, size, input.ptr, input.length, key.ptr, key.length);
 }
 
 
@@ -346,7 +346,7 @@ unittest
     assert(Base64.encode(hash) == "KCSJZ9yJ/b2up0y5nO7FzU4GVH8JW4PTHppYC7c5pTnAd6KV73aw716Lg6vnpfgtSGOVZr7Oz6a4DJ7EpqgIiQ==");
 
     ubyte[CONSTANT.KEYBYTES] key;
-    for( int i = 0; i < CONSTANT.KEYBYTES; i++ )
+    for(int i = 0; i < CONSTANT.KEYBYTES; i++)
         key[i] = cast(ubyte)i;
 
     // These values were taken from https://blake2.net/blake2b-test.txt
@@ -610,7 +610,7 @@ unittest
     ];
     auto buf = new ubyte[hashes.length];
 
-    for( int i = 0; i < hashes.length; ++i )
+    for(int i = 0; i < hashes.length; ++i)
     {
         ubyte[] test;
         buf[i] = cast(ubyte)i;

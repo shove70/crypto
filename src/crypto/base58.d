@@ -3,33 +3,31 @@ module crypto.base58;
 import std.bigint;
 import std.conv;
 
-public class Base58
+enum ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+private auto initIndex()
 {
-    public static char[] ALPHABET = cast(char[]) "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-    private static int[] INDEXES = new int[128];
+    int[128] a = -1;
 
-    static this()
+    foreach (i, c; ALPHABET)
     {
-        for (int i = 0; i < INDEXES.length; i++)
-        {
-            INDEXES[i] = -1;
-        }
-
-        for (int i = 0; i < ALPHABET.length; i++)
-        {
-            INDEXES[ALPHABET[i]] = i;
-        }
+        a[c] = cast(int)i;
     }
+    return a;
+}
 
+immutable int[128] INDEXES = initIndex();
+
+class Base58
+{
     /// Encodes the given bytes as a base58 string (no checksum is appended).
-    public static string encode(in byte[] inp)
+    static string encode(in byte[] inp)
     {
         if (inp.length == 0)
-        {
             return "";
-        }
+
         // Count leading zeros.
-        int zeros = 0;
+        int zeros;
         while (zeros < inp.length && inp[zeros] == 0)
         {
             ++zeros;
@@ -64,12 +62,11 @@ public class Base58
     }
 
     /// Decodes the given base58 string into the original data bytes.
-    public static byte[] decode(in char[] input)
+    static byte[] decode(in char[] input)
     {
         if (input.length == 0)
-        {
-            return new byte[0];
-        }
+            return [];
+
         // Convert the base58-encoded ASCII chars to a base58 byte sequence (base58 digits).
         byte[] input58 = new byte[input.length];
 
@@ -142,8 +139,8 @@ public class Base58
 
 unittest
 {
-    string data = "abcdef1234";
-    string en = Base58.encode(cast(byte[]) data);
-    byte[] de = Base58.decode(en);
-    assert(data == cast(string) de);
+    auto data = cast(byte[])"abcdef1234";
+    string en = Base58.encode(data);
+    auto de = Base58.decode(en);
+    assert(data == de);
 }

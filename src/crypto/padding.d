@@ -22,24 +22,26 @@ private enum PaddingStuff
     None, Zero, Random, Size, OriginalSize
 }
 
-alias PaddingNoPadding  = PaddingImpl!(PaddingStuff.None,   PaddingStuff.None);
-alias PaddingANSIX923   = PaddingImpl!(PaddingStuff.Zero,   PaddingStuff.Size);
-alias PaddingISO10126   = PaddingImpl!(PaddingStuff.Random, PaddingStuff.Size);
-alias PaddingPKCS5      = PaddingImpl!(PaddingStuff.Size,   PaddingStuff.Size);
-alias PaddingPKCS7      = PaddingImpl!(PaddingStuff.Size,   PaddingStuff.Size);
-alias PaddingZeros      = PaddingImpl!(PaddingStuff.Zero,   PaddingStuff.Zero);
-alias PaddingCustomized = PaddingImpl!(PaddingStuff.Zero,   PaddingStuff.OriginalSize);   // For downward compatibility.
+alias
+PaddingNoPadding  = PaddingImpl!(PaddingStuff.None,   PaddingStuff.None),
+PaddingANSIX923   = PaddingImpl!(PaddingStuff.Zero,   PaddingStuff.Size),
+PaddingISO10126   = PaddingImpl!(PaddingStuff.Random, PaddingStuff.Size),
+PaddingPKCS5      = PaddingImpl!(PaddingStuff.Size,   PaddingStuff.Size),
+PaddingPKCS7      = PaddingImpl!(PaddingStuff.Size,   PaddingStuff.Size),
+PaddingZeros      = PaddingImpl!(PaddingStuff.Zero,   PaddingStuff.Zero),
+PaddingCustomized = PaddingImpl!(PaddingStuff.Zero,   PaddingStuff.OriginalSize);   // For downward compatibility.
 
 class PaddingImpl(PaddingStuff fill, PaddingStuff suffix)
 {
     static ubyte[] padding(in ubyte[] data, size_t blockSize)
     {
-        enforce(((blockSize > 0) && (blockSize % 8 == 0)), "Invalid block size, which must be a multiple of 8.");
-        static assert(((suffix != PaddingStuff.OriginalSize) || (fill == PaddingStuff.Zero)), "PaddingCustomized require: Zero + OriginalSize.");
+        enforce(blockSize > 0 && blockSize % 8 == 0, "Invalid block size, which must be a multiple of 8.");
+        static assert(suffix != PaddingStuff.OriginalSize || fill == PaddingStuff.Zero,
+            "PaddingCustomized require: Zero + OriginalSize.");
 
-        static if ((fill == PaddingStuff.None) || (suffix == PaddingStuff.None))
+        static if (fill == PaddingStuff.None || suffix == PaddingStuff.None)
         {
-            enforce(((data.length > 0) && (data.length % blockSize == 0)), "Invalid data size, which must be a multiple of blockSize.");
+            enforce(data.length > 0 && data.length % blockSize == 0, "Invalid data size, which must be a multiple of blockSize.");
 
             return cast(ubyte[])data;
         }
@@ -95,59 +97,59 @@ class PaddingImpl(PaddingStuff fill, PaddingStuff suffix)
 
     static ubyte[] unpadding(in ubyte[] data, size_t blockSize)
     {
-        enforce(((blockSize > 0) && (blockSize % 8 == 0)), "Invalid block size, which must be a multiple of 8.");
-        enforce(((data.length > 0) && (data.length % blockSize == 0)), "Invalid data size, which must be a multiple of blockSize.");
-        static assert(((suffix != PaddingStuff.OriginalSize) || (fill == PaddingStuff.Zero)), "PaddingCustomized require: Zero + OriginalSize.");
+        enforce(blockSize > 0 && blockSize % 8 == 0, "Invalid block size, which must be a multiple of 8.");
+        enforce(data.length > 0 && data.length % blockSize == 0, "Invalid data size, which must be a multiple of blockSize.");
+        static assert(suffix != PaddingStuff.OriginalSize || fill == PaddingStuff.Zero, "PaddingCustomized require: Zero + OriginalSize.");
 
-        static if ((fill == PaddingStuff.None) || (suffix == PaddingStuff.None))
+        static if (fill == PaddingStuff.None || suffix == PaddingStuff.None)
         {
             return cast(ubyte[])data;
         }
-        else static if ((fill == PaddingStuff.Zero) && (suffix == PaddingStuff.Size))
+        else static if (fill == PaddingStuff.Zero && suffix == PaddingStuff.Size)
         {
             size_t size = data[$ - 1];
             enforce(size <= blockSize, "Error Padding Mode.");
-            enforce(data[data.length - size..$ - 1].all!((a) => (a == 0)), "Error Padding Mode.");
+            enforce(data[data.length - size..$ - 1].all!((a) => a == 0), "Error Padding Mode.");
 
             return cast(ubyte[])data[0..data.length - size];
         }
-        else static if ((fill == PaddingStuff.Random) && (suffix == PaddingStuff.Size))
+        else static if (fill == PaddingStuff.Random && suffix == PaddingStuff.Size)
         {
             size_t size = data[$ - 1];
             enforce(size <= blockSize, "Error Padding Mode.");
 
             return cast(ubyte[])data[0..data.length - size];
         }
-        else static if ((fill == PaddingStuff.Size) && (suffix == PaddingStuff.Size))
+        else static if (fill == PaddingStuff.Size && suffix == PaddingStuff.Size)
         {
             size_t size = data[$ - 1];
             enforce(size <= blockSize, "Error Padding Mode.");
-            enforce(data[data.length - size..$ - 1].all!((a) => (a == size)), "Error Padding Mode.");
+            enforce(data[data.length - size..$ - 1].all!((a) => a == size), "Error Padding Mode.");
 
             return cast(ubyte[])data[0..data.length - size];
         }
-        else static if ((fill == PaddingStuff.Zero) && (suffix == PaddingStuff.Zero))
+        else static if (fill == PaddingStuff.Zero && suffix == PaddingStuff.Zero)
         {
             enforce(data[$ - 1] == 0, "Error Padding Mode.");
             int index = cast(int)data.length - 1;
 
-            while ((index >= 0) && (data[index] == 0))
+            while (index >= 0 && data[index] == 0)
             {
                 index--;
             }
 
             return cast(ubyte[])data[0..index + 1];
         }
-        else static if ((fill == PaddingStuff.Zero) && (suffix == PaddingStuff.OriginalSize))
+        else static if (fill == PaddingStuff.Zero && suffix == PaddingStuff.OriginalSize)
         {
             int orgi_len;
             orgi_len = data.peek!int(data.length - 4);
 
-            enforce(((orgi_len >= 0) && (orgi_len <= (data.length - 4))), "Invalid parameter: data.");
+            enforce(orgi_len >= 0 && orgi_len <= data.length - 4, "Invalid parameter: data.");
 
-            for (size_t i = orgi_len; i < (data.length - 4); i++)
+            for (size_t i = orgi_len; i < data.length - 4; i++)
             {
-                enforce((data[i] == 0), "Invalid parameter: data.");
+                enforce(data[i] == 0, "Invalid parameter: data.");
             }
 
             return cast(ubyte[])data[0..orgi_len];

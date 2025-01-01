@@ -14,10 +14,10 @@ alias TOF = _mm_castsi128_ps;
 alias TOI = _mm_castps_si128;
 
 
-__m128i _mm_roti_epi32( in __m128i r, in int c )
+__m128i _mm_roti_epi32(in __m128i r, int c)
 @safe
 {
-    return _mm_xor_si128(_mm_srli_epi32((r), -(c) ),_mm_slli_epi32((r), 32-(-(c)) ));
+    return _mm_xor_si128(_mm_srli_epi32((r), -(c)),_mm_slli_epi32((r), 32-(-(c))));
 }
 
 version(LDC)
@@ -25,11 +25,11 @@ version(LDC)
     template tmplG1 (int buf)
     {
         const tmplG1 = `
-            rows[0] = _mm_add_epi32( _mm_add_epi32( rows[0], bufs[` ~to!string(buf)~ `]), rows[1] );
-            rows[3] = _mm_xor_si128( rows[3], rows[0] );
+            rows[0] = _mm_add_epi32(_mm_add_epi32(rows[0], bufs[` ~to!string(buf)~ `]), rows[1]);
+            rows[3] = _mm_xor_si128(rows[3], rows[0]);
             rows[3] = _mm_roti_epi32(rows[3], -16);
-            rows[2] = _mm_add_epi32( rows[2], rows[3] );
-            rows[1] = _mm_xor_si128( rows[1], rows[2] );
+            rows[2] = _mm_add_epi32(rows[2], rows[3]);
+            rows[1] = _mm_xor_si128(rows[1], rows[2]);
             rows[1] = _mm_roti_epi32(rows[1], -12);
         `;
     }
@@ -37,11 +37,11 @@ version(LDC)
     template tmplG2 (int buf)
     {
         const tmplG2 = `
-            rows[0] = _mm_add_epi32( _mm_add_epi32( rows[0], bufs[` ~to!string(buf)~ `]), rows[1] );
-            rows[3] = _mm_xor_si128( rows[3], rows[0] );
+            rows[0] = _mm_add_epi32(_mm_add_epi32(rows[0], bufs[` ~to!string(buf)~ `]), rows[1]);
+            rows[3] = _mm_xor_si128(rows[3], rows[0]);
             rows[3] = _mm_roti_epi32(rows[3], -8);
-            rows[2] = _mm_add_epi32( rows[2], rows[3] );
-            rows[1] = _mm_xor_si128( rows[1], rows[2] );
+            rows[2] = _mm_add_epi32(rows[2], rows[3]);
+            rows[1] = _mm_xor_si128(rows[1], rows[2]);
             rows[1] = _mm_roti_epi32(rows[1], -7);
         `;
     }
@@ -50,36 +50,36 @@ else
 {
     void fG1 (ref __m128i[4] rows, in __m128i buf)
     {
-        rows[0] = _mm_add_epi32(_mm_add_epi32(rows[0], buf), rows[1] );
-        rows[3] = _mm_xor_si128(rows[3], rows[0] );
+        rows[0] = _mm_add_epi32(_mm_add_epi32(rows[0], buf), rows[1]);
+        rows[3] = _mm_xor_si128(rows[3], rows[0]);
         rows[3] = _mm_roti_epi32(rows[3], -16);
-        rows[2] = _mm_add_epi32(rows[2], rows[3] );
-        rows[1] = _mm_xor_si128(rows[1], rows[2] );
+        rows[2] = _mm_add_epi32(rows[2], rows[3]);
+        rows[1] = _mm_xor_si128(rows[1], rows[2]);
         rows[1] = _mm_roti_epi32(rows[1], -12);
     }
 
     void fG2 (ref __m128i[4] rows, in __m128i buf)
     {
-        rows[0] = _mm_add_epi32(_mm_add_epi32(rows[0], buf), rows[1] );
-        rows[3] = _mm_xor_si128(rows[3], rows[0] );
-        rows[3] = _mm_roti_epi32(rows[3], -8 );
-        rows[2] = _mm_add_epi32(rows[2], rows[3] );
-        rows[1] = _mm_xor_si128(rows[1], rows[2] );
-        rows[1] = _mm_roti_epi32(rows[1], -7 );
+        rows[0] = _mm_add_epi32(_mm_add_epi32(rows[0], buf), rows[1]);
+        rows[3] = _mm_xor_si128(rows[3], rows[0]);
+        rows[3] = _mm_roti_epi32(rows[3], -8);
+        rows[2] = _mm_add_epi32(rows[2], rows[3]);
+        rows[1] = _mm_xor_si128(rows[1], rows[2]);
+        rows[1] = _mm_roti_epi32(rows[1], -7);
     }
 }
 
 
 immutable DIAGONALIZE = `
-    rows[0] = _mm_shuffle_epi32!(_MM_SHUFFLE(2,1,0,3))( rows[0] );
-    rows[3] = _mm_shuffle_epi32!(_MM_SHUFFLE(1,0,3,2))( rows[3] );
-    rows[2] = _mm_shuffle_epi32!(_MM_SHUFFLE(0,3,2,1))( rows[2] );
+    rows[0] = _mm_shuffle_epi32!(_MM_SHUFFLE(2,1,0,3))(rows[0]);
+    rows[3] = _mm_shuffle_epi32!(_MM_SHUFFLE(1,0,3,2))(rows[3]);
+    rows[2] = _mm_shuffle_epi32!(_MM_SHUFFLE(0,3,2,1))(rows[2]);
 `;
 
 immutable UNDIAGONALIZE = `
-    rows[0] = _mm_shuffle_epi32!(_MM_SHUFFLE(0,3,2,1))( rows[0] );
-    rows[3] = _mm_shuffle_epi32!(_MM_SHUFFLE(1,0,3,2))( rows[3] );
-    rows[2] = _mm_shuffle_epi32!(_MM_SHUFFLE(2,1,0,3))( rows[2] );
+    rows[0] = _mm_shuffle_epi32!(_MM_SHUFFLE(0,3,2,1))(rows[0]);
+    rows[3] = _mm_shuffle_epi32!(_MM_SHUFFLE(1,0,3,2))(rows[3]);
+    rows[2] = _mm_shuffle_epi32!(_MM_SHUFFLE(2,1,0,3))(rows[2]);
 `;
 
 immutable matrix = [
@@ -148,7 +148,7 @@ immutable matrix = [
 
 version(LDC)
 {
-    template tmplLoadMsg (int r, int c, int buf)
+    template tmplLoadMsg(int r, int c, int buf)
     {
         const cell = matrix[r][c];
         const tmplLoadMsg = "
@@ -179,13 +179,13 @@ version(LDC)
 }
 else
 {
-    void loadMsg (in const(uint)[16] m, in int r, in int c, out __m128i buf)
+    void loadMsg(in const(uint)[16] m, int r, int c, out __m128i buf)
     {
         const cell = matrix[r][c];
         buf = _mm_set_epi32(m[cell[0]], m[cell[1]], m[cell[2]], m[cell[3]]);
     }
 
-    void round (in const(uint)[16] m, in int r, ref __m128i[4] rows, ref __m128i[4] bufs)
+    void round(in const(uint)[16] m, int r, ref __m128i[4] rows, ref __m128i[4] bufs)
     {
         loadMsg(m, r, 0, bufs[0]);
         fG1(rows, bufs[0]);

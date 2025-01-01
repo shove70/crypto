@@ -27,8 +27,7 @@ version (SecureARC4Random)
         {
             if (min == T.min && max == T.max)
                 return cast(T) arc4random();
-            else
-                return cast(T) (min + arc4random_uniform(1U + max - min));
+            return cast(T) (min + arc4random_uniform(1U + max - min));
         }
     }
 
@@ -66,10 +65,10 @@ else version (Windows)
         }
 
         // Stuff to make this work with std.random:
-        enum uint min = uint.min;
-        enum uint max = uint.max;
-        enum bool isUniformRandom = true;
-        enum bool empty = false;
+        enum min = uint.min;
+        enum max = uint.max;
+        enum isUniformRandom = true;
+        enum empty = false;
 
         uint front() @nogc nothrow @trusted
         {
@@ -149,10 +148,10 @@ else version (Posix)
         }
 
         // Stuff to make this work with std.random:
-        enum uint min = uint.min;
-        enum uint max = uint.max;
-        enum bool isUniformRandom = true;
-        enum bool empty = false;
+        enum min = uint.min;
+        enum max = uint.max;
+        enum isUniformRandom = true;
+        enum empty = false;
 
         uint front() @trusted
         {

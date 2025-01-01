@@ -1,8 +1,9 @@
 /.project
 **/.dub/
 **/dub.selections.json
-/libcrypto.a
-/crypto.lib
+*.a
+*.lib
+*.exe
 /crypto
-/crypto.exe
 /crypto-test-library
+*.pdb
